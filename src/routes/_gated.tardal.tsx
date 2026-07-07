@@ -1,16 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { buildTardal } from "@/lib/mock-data";
+import { lotteryQueryOptions } from "@/lib/lottery-query";
+import { buildTardal } from "@/lib/lottery-analysis";
 import { Layers } from "lucide-react";
 
 export const Route = createFileRoute("/_gated/tardal")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(lotteryQueryOptions),
   component: TardalPage,
 });
 
-const POS = ["AS", "KOP", "KEPALA", "EKOR"] as const;
-
 function TardalPage() {
-  const t = buildTardal();
+  const { data: feed } = useSuspenseQuery(lotteryQueryOptions);
+  const t = buildTardal(feed.rows);
   return (
     <div className="space-y-6">
       <Card>
@@ -21,27 +23,28 @@ function TardalPage() {
         </CardHeader>
         <CardContent>
           <p className="text-xs text-muted-foreground">
-            20-engine analysis untuk masing-masing posisi digit (AS / KOP / KEPALA / EKOR).
-            Skor menunjukkan tingkat kepercayaan digit muncul di posisi tersebut pada draw berikutnya.
+            Frekuensi digit di masing-masing posisi (AS / KOP / KEPALA / EKOR), dihitung
+            dari {feed.rows.length} hari data real ({feed.source}). Skor = persentase
+            kemunculan digit tersebut di posisi itu.
           </p>
         </CardContent>
       </Card>
 
       <div className="grid gap-4 md:grid-cols-2">
-        {POS.map((pos) => {
-          const list = t[pos];
-          const top = list[0];
+        {t.map(({ position, digits }) => {
+          const top = digits[0];
+          const maxScore = digits[0].score || 1;
           return (
-            <Card key={pos}>
+            <Card key={position}>
               <CardHeader className="flex-row items-center justify-between">
-                <CardTitle className="text-sm">Posisi {pos}</CardTitle>
+                <CardTitle className="text-sm">Posisi {position}</CardTitle>
                 <span className="rounded-md bg-primary/20 px-2 py-0.5 text-[10px] font-black text-primary">
-                  Top: {top.digit} · {top.score}
+                  Top: {top.digit} · {top.score}%
                 </span>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-5 gap-2">
-                  {list.map((d, i) => (
+                  {digits.map((d, i) => (
                     <div
                       key={d.digit}
                       className={`rounded-lg border p-2 text-center ${
@@ -50,16 +53,14 @@ function TardalPage() {
                           : "border-border bg-muted/30"
                       }`}
                     >
-                      <p className="font-mono text-xl font-black text-foreground">
-                        {d.digit}
-                      </p>
+                      <p className="font-mono text-xl font-black text-foreground">{d.digit}</p>
                       <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                        {d.score}
+                        {d.score}%
                       </p>
                       <div className="mt-1 h-1 overflow-hidden rounded-full bg-muted">
                         <div
                           className="h-full bg-primary"
-                          style={{ width: `${d.score}%` }}
+                          style={{ width: `${Math.min(100, (d.score / maxScore) * 100)}%` }}
                         />
                       </div>
                     </div>

@@ -1,37 +1,55 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
+import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { AI_THOUGHTS, engineConfidences } from "@/lib/mock-data";
+import { lotteryQueryOptions } from "@/lib/lottery-query";
+import { getLotteryFeed } from "@/lib/lottery.functions";
+import { engineConfidences, digitFrequency, digitGaps, buildPrediction } from "@/lib/lottery-analysis";
 import { Brain, Cpu, Zap } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_gated/otak-ai")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(lotteryQueryOptions),
   component: OtakAiPage,
 });
 
 function OtakAiPage() {
-  const [engines, setEngines] = useState(engineConfidences(3));
-  const [thoughts, setThoughts] = useState(AI_THOUGHTS);
-  const [learning, setLearning] = useState(false);
+  const { data: feed } = useSuspenseQuery(lotteryQueryOptions);
+  const rows = feed.rows;
+  const qc = useQueryClient();
+  const router = useRouter();
 
-  function triggerLearn() {
-    setLearning(true);
-    toast.info("Manual learning triggered…");
-    setTimeout(() => {
-      setEngines(engineConfidences(Math.floor(Math.random() * 1000)));
-      setThoughts([
-        {
-          time: new Date().toLocaleTimeString("id-ID", { hour12: false }),
-          msg: "Manual learn: bobot engine di-rebalance berdasarkan 200 draw terakhir.",
-        },
-        ...thoughts,
-      ]);
-      setLearning(false);
-      toast.success("Otak AI selesai belajar.");
-    }, 1400);
+  const engines = engineConfidences(rows);
+  const freq = digitFrequency(rows);
+  const gaps = digitGaps(rows);
+  const pred = buildPrediction(rows);
+  const totalDraws = freq.reduce((a, f) => a + f.count, 0) / 4; // 4 digits per draw
+
+  const [refreshing, setRefreshing] = useState(false);
+  async function forceRefresh() {
+    setRefreshing(true);
+    toast.info("Menarik data terbaru dari nomorupdate.org…");
+    try {
+      const fresh = await getLotteryFeed({ data: { force: true } });
+      qc.setQueryData(lotteryQueryOptions.queryKey, fresh);
+      await router.invalidate();
+      toast.success("Data ter-refresh dan model dihitung ulang.");
+    } catch (e) {
+      toast.error(`Gagal refresh: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setRefreshing(false);
+    }
   }
+
+  const thoughts = [
+    `Meta ensemble: BBFS7 = ${pred.bbfs7}. Top-25 pertama = ${pred.top25.slice(0, 5).join(", ")}.`,
+    `Digit terpanas: ${[...freq].sort((a, b) => b.count - a.count).slice(0, 3).map((f) => `${f.digit}(${f.pct}%)`).join(", ")}.`,
+    `Due digits (gap ≥): ${[...gaps].sort((a, b) => b.gap - a.gap).slice(0, 3).map((g) => `${g.digit} gap=${g.gap}`).join(", ")}.`,
+    `Sample training: ${Math.round(totalDraws)} draw real (${rows.length} hari) dari ${feed.source}.`,
+    `Feed terakhir di-fetch: ${new Date(feed.fetchedAt).toLocaleString("id-ID")}.`,
+  ];
 
   return (
     <div className="space-y-6">
@@ -43,18 +61,17 @@ function OtakAiPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
-            <Row k="Total draw trained" v="3,148" />
-            <Row k="Last learn" v="2 menit lalu" />
-            <Row k="Model version" v="v6.2.1-ensemble" />
-            <Row k="Auto-learn" v={<Badge className="bg-emerald-500/20 text-emerald-400">ON</Badge>} />
-            <Row k="Cadence" v="setiap 15 menit" />
-            <Button
-              onClick={triggerLearn}
-              disabled={learning}
-              className="mt-3 w-full gap-2"
-            >
+            <Row k="Total draw analyzed" v={String(Math.round(totalDraws))} />
+            <Row k="Hari data" v={String(rows.length)} />
+            <Row k="Sumber" v={feed.source} />
+            <Row k="Last fetch" v={new Date(feed.fetchedAt).toLocaleTimeString("id-ID")} />
+            <Row
+              k="Auto-refresh"
+              v={<Badge className="bg-emerald-500/20 text-emerald-400">tiap 5 menit</Badge>}
+            />
+            <Button onClick={forceRefresh} disabled={refreshing} className="mt-3 w-full gap-2">
               <Zap className="h-4 w-4" />
-              {learning ? "Belajar…" : "Trigger Manual Learn"}
+              {refreshing ? "Menarik data…" : "Force Refresh dari Sumber"}
             </Button>
           </CardContent>
         </Card>
@@ -62,16 +79,13 @@ function OtakAiPage() {
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-sm">
-              <Cpu className="h-4 w-4 text-primary" /> Bobot Engine (live)
+              <Cpu className="h-4 w-4 text-primary" /> Bobot Engine (dihitung dari data real)
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
               {engines.map((e) => (
-                <div
-                  key={e.name}
-                  className="rounded-lg border border-border bg-muted/40 p-2"
-                >
+                <div key={e.name} className="rounded-lg border border-border bg-muted/40 p-2">
                   <p className="truncate text-[11px] font-bold text-foreground">{e.name}</p>
                   <div className="mt-1 flex items-baseline gap-1">
                     <span className="font-mono text-lg font-black text-primary">
@@ -79,6 +93,7 @@ function OtakAiPage() {
                     </span>
                     <span className="text-[10px] text-muted-foreground">%</span>
                   </div>
+                  <p className="mt-0.5 truncate text-[9px] text-muted-foreground">{e.detail}</p>
                 </div>
               ))}
             </div>
@@ -91,16 +106,13 @@ function OtakAiPage() {
           <CardTitle className="text-sm">Think Log</CardTitle>
         </CardHeader>
         <CardContent>
-          <ul className="space-y-3">
+          <ul className="space-y-2">
             {thoughts.map((t, i) => (
               <li
                 key={i}
-                className="flex gap-3 rounded-lg border border-border bg-muted/30 p-3"
+                className="rounded-lg border border-border bg-muted/30 p-3 text-xs text-foreground"
               >
-                <span className="font-mono text-[11px] font-bold text-muted-foreground">
-                  {t.time}
-                </span>
-                <span className="text-xs text-foreground">{t.msg}</span>
+                {t}
               </li>
             ))}
           </ul>

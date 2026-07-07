@@ -1,9 +1,10 @@
 import { createFileRoute, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Toaster } from "sonner";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { isUnlocked } from "@/lib/access";
+import { Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/_gated")({
   component: GatedLayout,
@@ -60,11 +61,20 @@ function GatedLayout() {
             </div>
             <div className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
               <span className="flex h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
-              <span className="font-semibold">Demo Mode</span>
+              <span className="font-semibold">LIVE · nomorupdate.org</span>
             </div>
           </header>
           <main className="flex-1 overflow-x-hidden p-4 md:p-6">
-            <Outlet />
+            <Suspense
+              fallback={
+                <div className="flex h-64 items-center justify-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Menarik data dari nomorupdate.org…
+                </div>
+              }
+            >
+              <Outlet />
+            </Suspense>
           </main>
         </div>
       </div>

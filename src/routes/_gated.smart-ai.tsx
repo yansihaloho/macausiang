@@ -1,17 +1,23 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { buildAiPrediction, engineConfidences, TIME_SLOTS } from "@/lib/mock-data";
+import { TIME_SLOTS } from "@/lib/lottery.functions";
+import { lotteryQueryOptions } from "@/lib/lottery-query";
+import { buildPrediction, buildSlotPrediction, engineConfidences } from "@/lib/lottery-analysis";
 import { Sparkles, Cpu } from "lucide-react";
 
 export const Route = createFileRoute("/_gated/smart-ai")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(lotteryQueryOptions),
   component: SmartAiPage,
 });
 
 function SmartAiPage() {
-  const engines = engineConfidences();
-  const pred = buildAiPrediction(21);
+  const { data: feed } = useSuspenseQuery(lotteryQueryOptions);
+  const rows = feed.rows;
+  const engines = engineConfidences(rows);
+  const pred = buildPrediction(rows);
   const meta = Math.round(engines.reduce((a, e) => a + e.confidence, 0) / engines.length);
 
   return (
@@ -27,7 +33,7 @@ function SmartAiPage() {
           <CardContent className="space-y-4">
             <div>
               <p className="mb-2 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-                BBFS 7 (rekomendasi)
+                BBFS 7 (rekomendasi ensemble)
               </p>
               <div className="flex gap-2">
                 {pred.bbfs7.split("").map((d, i) => (
@@ -42,7 +48,7 @@ function SmartAiPage() {
             </div>
             <div>
               <p className="mb-2 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-                Top-25 · 2D
+                Top-25 · 2D (KEPALA×EKOR Markov)
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {pred.top25.map((n) => (
@@ -55,16 +61,19 @@ function SmartAiPage() {
                 ))}
               </div>
             </div>
+            <p className="text-[10px] text-muted-foreground">
+              Analisa berbasis {rows.length} hari · sumber {feed.source}
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm">Rekomendasi per Slot</CardTitle>
+            <CardTitle className="text-sm">BBFS 7 per Slot</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {TIME_SLOTS.map((s, i) => {
-              const p = buildAiPrediction(100 + i);
+            {TIME_SLOTS.map((s) => {
+              const p = buildSlotPrediction(rows, s);
               return (
                 <div key={s} className="flex items-center justify-between rounded-lg border border-border bg-muted/40 px-3 py-2">
                   <span className="text-xs font-bold text-muted-foreground">{s}</span>
@@ -79,7 +88,7 @@ function SmartAiPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm">
-            <Cpu className="h-4 w-4 text-primary" /> Confidence per Engine
+            <Cpu className="h-4 w-4 text-primary" /> Confidence per Engine (sinyal statistik)
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -93,6 +102,7 @@ function SmartAiPage() {
                   </span>
                 </div>
                 <Progress value={e.confidence} className="h-1.5" />
+                <p className="truncate text-[10px] text-muted-foreground">{e.detail}</p>
               </div>
             ))}
           </div>

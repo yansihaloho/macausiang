@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { buildAccuracy } from "@/lib/mock-data";
+import { lotteryQueryOptions } from "@/lib/lottery-query";
+import { buildAccuracy } from "@/lib/lottery-analysis";
 import { Activity } from "lucide-react";
 import {
   Bar,
@@ -14,22 +16,33 @@ import {
 } from "recharts";
 
 export const Route = createFileRoute("/_gated/akurasi")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(lotteryQueryOptions),
   component: AkurasiPage,
 });
 
 function AkurasiPage() {
-  const data = buildAccuracy();
+  const { data: feed } = useSuspenseQuery(lotteryQueryOptions);
+  const data = buildAccuracy(feed.rows);
+  const totalSamples = data.reduce((a, r) => a + r.samples, 0);
   const avg = (key: "bbfs5" | "bbfs7" | "bbfs9" | "top25") =>
     Math.round(data.reduce((a, r) => a + r[key], 0) / data.length);
 
   return (
     <div className="space-y-6">
+      <Card>
+        <CardContent className="p-4 text-xs text-muted-foreground">
+          Backtest: prediksi untuk tiap draw historis dihitung dari data sebelum draw itu,
+          lalu dibandingkan dengan hasil sesungguhnya. Total sampel: <strong>{totalSamples}</strong> draw
+          nyata dari <strong>{feed.source}</strong>.
+        </CardContent>
+      </Card>
+
       <div className="grid gap-4 md:grid-cols-4">
         {[
           { k: "bbfs5", label: "BBFS 5" },
           { k: "bbfs7", label: "BBFS 7" },
           { k: "bbfs9", label: "BBFS 9" },
-          { k: "top25", label: "Top-25" },
+          { k: "top25", label: "Top-25 2D" },
         ].map((m) => (
           <Card key={m.k}>
             <CardContent className="p-4">
