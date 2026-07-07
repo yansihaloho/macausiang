@@ -1,11 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MOCK_RESULTS, TIME_SLOTS } from "@/lib/mock-data";
+import { TIME_SLOTS } from "@/lib/lottery.functions";
+import { lotteryQueryOptions } from "@/lib/lottery-query";
 import { Radio } from "lucide-react";
 
 export const Route = createFileRoute("/_gated/live")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(lotteryQueryOptions),
   component: LivePage,
 });
 
@@ -34,6 +37,8 @@ function fmt(secs: number) {
 }
 
 function LivePage() {
+  const { data: feed } = useSuspenseQuery(lotteryQueryOptions);
+  const rows = feed.rows;
   const [countdown, setCountdown] = useState(nextSlotSeconds());
   useEffect(() => {
     const id = setInterval(() => setCountdown(nextSlotSeconds()), 1000);
@@ -101,8 +106,8 @@ function LivePage() {
                 </tr>
               </thead>
               <tbody>
-                {MOCK_RESULTS.slice(0, 8).map((r) => (
-                  <tr key={r.tanggal} className="border-b border-border/50">
+                {rows.slice(0, 8).map((r) => (
+                  <tr key={r.isoDate || r.tanggal} className="border-b border-border/50">
                     <td className="px-2 py-2 text-xs">
                       <p className="font-semibold text-foreground">{r.hari}</p>
                       <p className="text-muted-foreground">{r.tanggal}</p>
@@ -116,6 +121,10 @@ function LivePage() {
                 ))}
               </tbody>
             </table>
+            <p className="mt-3 text-[10px] text-muted-foreground">
+              Sumber: {feed.source} · terakhir diambil{" "}
+              {new Date(feed.fetchedAt).toLocaleString("id-ID")} · auto-refresh 5 menit
+            </p>
           </CardContent>
         </Card>
       </div>
