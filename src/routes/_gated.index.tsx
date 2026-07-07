@@ -105,13 +105,7 @@ function DashboardPage() {
                     return (
                       <Cell
                         key={d.digit}
-                        fill={
-                          isHot
-                            ? "oklch(0.7 0.2 30)"
-                            : isCold
-                              ? "oklch(0.5 0.15 240)"
-                              : "oklch(0.62 0.19 255)"
-                        }
+                        fill={isHot ? "#f97316" : isCold ? "#64748b" : "#3b82f6"}
                       />
                     );
                   })}
