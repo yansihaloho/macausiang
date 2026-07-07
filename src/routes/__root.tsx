@@ -77,12 +77,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "4D Macau — Strategi BESAR" },
+      { title: "MACAU TOTO" },
       { name: "description", content: "Dashboard prediksi 4D Macau: kalkulator Martingale, Smart AI 20-engine, TARDAL, tracker akurasi, live draw." },
-      { property: "og:title", content: "4D Macau — Strategi BESAR" },
-      { property: "og:description", content: "Dashboard prediksi 4D Macau: kalkulator, Smart AI, TARDAL, akurasi & live draw." },
+      { property: "og:title", content: "MACAU TOTO" },
+      { property: "og:description", content: "Dashboard prediksi 4D Macau: kalkulator Martingale, Smart AI 20-engine, TARDAL, tracker akurasi, live draw." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "MACAU TOTO" },
+      { name: "twitter:description", content: "Dashboard prediksi 4D Macau: kalkulator Martingale, Smart AI 20-engine, TARDAL, tracker akurasi, live draw." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/eee0321b-c66e-4260-81dc-7a175a227685/id-preview-ea341557--0b3dda1c-8348-4e1e-9029-e5d6d7cf824b.lovable.app-1783396131483.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/eee0321b-c66e-4260-81dc-7a175a227685/id-preview-ea341557--0b3dda1c-8348-4e1e-9029-e5d6d7cf824b.lovable.app-1783396131483.png" },
     ],
     links: [
       {
