@@ -26,7 +26,14 @@ import {
 } from "@/components/ui/sidebar";
 import { lock } from "@/lib/access";
 
-const NAV = [
+type NavItem = {
+  to: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  exact?: boolean;
+};
+
+const NAV: NavItem[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/live", label: "Dashboard Live", icon: Radio },
   { to: "/kalkulator", label: "Kalkulator", icon: Calculator },
@@ -37,7 +44,7 @@ const NAV = [
   { to: "/otak-ai", label: "Otak AI", icon: Brain },
   { to: "/laporan", label: "Laporan", icon: FileText },
   { to: "/kick", label: "KickLive", icon: Tv },
-] as const;
+];
 
 export function AppSidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
