@@ -13,6 +13,7 @@ import { Route as UnlockRouteImport } from './routes/unlock'
 import { Route as GatedRouteImport } from './routes/_gated'
 import { Route as GatedIndexRouteImport } from './routes/_gated.index'
 import { Route as GatedLiveRouteImport } from './routes/_gated.live'
+import { Route as GatedKalkulatorRouteImport } from './routes/_gated.kalkulator'
 
 const UnlockRoute = UnlockRouteImport.update({
   id: '/unlock',
@@ -33,14 +34,21 @@ const GatedLiveRoute = GatedLiveRouteImport.update({
   path: '/live',
   getParentRoute: () => GatedRoute,
 } as any)
+const GatedKalkulatorRoute = GatedKalkulatorRouteImport.update({
+  id: '/kalkulator',
+  path: '/kalkulator',
+  getParentRoute: () => GatedRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof GatedIndexRoute
   '/unlock': typeof UnlockRoute
+  '/kalkulator': typeof GatedKalkulatorRoute
   '/live': typeof GatedLiveRoute
 }
 export interface FileRoutesByTo {
   '/unlock': typeof UnlockRoute
+  '/kalkulator': typeof GatedKalkulatorRoute
   '/live': typeof GatedLiveRoute
   '/': typeof GatedIndexRoute
 }
@@ -48,15 +56,22 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_gated': typeof GatedRouteWithChildren
   '/unlock': typeof UnlockRoute
+  '/_gated/kalkulator': typeof GatedKalkulatorRoute
   '/_gated/live': typeof GatedLiveRoute
   '/_gated/': typeof GatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/unlock' | '/live'
+  fullPaths: '/' | '/unlock' | '/kalkulator' | '/live'
   fileRoutesByTo: FileRoutesByTo
-  to: '/unlock' | '/live' | '/'
-  id: '__root__' | '/_gated' | '/unlock' | '/_gated/live' | '/_gated/'
+  to: '/unlock' | '/kalkulator' | '/live' | '/'
+  id:
+    | '__root__'
+    | '/_gated'
+    | '/unlock'
+    | '/_gated/kalkulator'
+    | '/_gated/live'
+    | '/_gated/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -94,15 +109,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GatedLiveRouteImport
       parentRoute: typeof GatedRoute
     }
+    '/_gated/kalkulator': {
+      id: '/_gated/kalkulator'
+      path: '/kalkulator'
+      fullPath: '/kalkulator'
+      preLoaderRoute: typeof GatedKalkulatorRouteImport
+      parentRoute: typeof GatedRoute
+    }
   }
 }
 
 interface GatedRouteChildren {
+  GatedKalkulatorRoute: typeof GatedKalkulatorRoute
   GatedLiveRoute: typeof GatedLiveRoute
   GatedIndexRoute: typeof GatedIndexRoute
 }
 
 const GatedRouteChildren: GatedRouteChildren = {
+  GatedKalkulatorRoute: GatedKalkulatorRoute,
   GatedLiveRoute: GatedLiveRoute,
   GatedIndexRoute: GatedIndexRoute,
 }
