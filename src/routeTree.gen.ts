@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnlockRouteImport } from './routes/unlock'
 import { Route as GatedRouteImport } from './routes/_gated'
 import { Route as GatedIndexRouteImport } from './routes/_gated.index'
+import { Route as GatedLiveRouteImport } from './routes/_gated.live'
 
 const UnlockRoute = UnlockRouteImport.update({
   id: '/unlock',
@@ -27,27 +28,35 @@ const GatedIndexRoute = GatedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => GatedRoute,
 } as any)
+const GatedLiveRoute = GatedLiveRouteImport.update({
+  id: '/live',
+  path: '/live',
+  getParentRoute: () => GatedRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof GatedIndexRoute
   '/unlock': typeof UnlockRoute
+  '/live': typeof GatedLiveRoute
 }
 export interface FileRoutesByTo {
   '/unlock': typeof UnlockRoute
+  '/live': typeof GatedLiveRoute
   '/': typeof GatedIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_gated': typeof GatedRouteWithChildren
   '/unlock': typeof UnlockRoute
+  '/_gated/live': typeof GatedLiveRoute
   '/_gated/': typeof GatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/unlock'
+  fullPaths: '/' | '/unlock' | '/live'
   fileRoutesByTo: FileRoutesByTo
-  to: '/unlock' | '/'
-  id: '__root__' | '/_gated' | '/unlock' | '/_gated/'
+  to: '/unlock' | '/live' | '/'
+  id: '__root__' | '/_gated' | '/unlock' | '/_gated/live' | '/_gated/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -78,14 +87,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GatedIndexRouteImport
       parentRoute: typeof GatedRoute
     }
+    '/_gated/live': {
+      id: '/_gated/live'
+      path: '/live'
+      fullPath: '/live'
+      preLoaderRoute: typeof GatedLiveRouteImport
+      parentRoute: typeof GatedRoute
+    }
   }
 }
 
 interface GatedRouteChildren {
+  GatedLiveRoute: typeof GatedLiveRoute
   GatedIndexRoute: typeof GatedIndexRoute
 }
 
 const GatedRouteChildren: GatedRouteChildren = {
+  GatedLiveRoute: GatedLiveRoute,
   GatedIndexRoute: GatedIndexRoute,
 }
 
