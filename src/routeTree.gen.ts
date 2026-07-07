@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnlockRouteImport } from './routes/unlock'
 import { Route as GatedRouteImport } from './routes/_gated'
+import { Route as GatedIndexRouteImport } from './routes/_gated.index'
 
 const UnlockRoute = UnlockRouteImport.update({
   id: '/unlock',
@@ -21,30 +22,36 @@ const GatedRoute = GatedRouteImport.update({
   id: '/_gated',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GatedIndexRoute = GatedIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => GatedRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof GatedRoute
+  '/': typeof GatedIndexRoute
   '/unlock': typeof UnlockRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof GatedRoute
   '/unlock': typeof UnlockRoute
+  '/': typeof GatedIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/_gated': typeof GatedRoute
+  '/_gated': typeof GatedRouteWithChildren
   '/unlock': typeof UnlockRoute
+  '/_gated/': typeof GatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths: '/' | '/unlock'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/unlock'
-  id: '__root__' | '/_gated' | '/unlock'
+  to: '/unlock' | '/'
+  id: '__root__' | '/_gated' | '/unlock' | '/_gated/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  GatedRoute: typeof GatedRoute
+  GatedRoute: typeof GatedRouteWithChildren
   UnlockRoute: typeof UnlockRoute
 }
 
@@ -64,11 +71,28 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GatedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_gated/': {
+      id: '/_gated/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof GatedIndexRouteImport
+      parentRoute: typeof GatedRoute
+    }
   }
 }
 
+interface GatedRouteChildren {
+  GatedIndexRoute: typeof GatedIndexRoute
+}
+
+const GatedRouteChildren: GatedRouteChildren = {
+  GatedIndexRoute: GatedIndexRoute,
+}
+
+const GatedRouteWithChildren = GatedRoute._addFileChildren(GatedRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  GatedRoute: GatedRoute,
+  GatedRoute: GatedRouteWithChildren,
   UnlockRoute: UnlockRoute,
 }
 export const routeTree = rootRouteImport
