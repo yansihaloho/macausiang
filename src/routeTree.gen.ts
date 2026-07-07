@@ -18,6 +18,7 @@ import { Route as GatedPrediksiRouteImport } from './routes/_gated.prediksi'
 import { Route as GatedOtakAiRouteImport } from './routes/_gated.otak-ai'
 import { Route as GatedLiveRouteImport } from './routes/_gated.live'
 import { Route as GatedLaporanRouteImport } from './routes/_gated.laporan'
+import { Route as GatedKickRouteImport } from './routes/_gated.kick'
 import { Route as GatedKalkulatorRouteImport } from './routes/_gated.kalkulator'
 import { Route as GatedAkurasiRouteImport } from './routes/_gated.akurasi'
 
@@ -65,6 +66,11 @@ const GatedLaporanRoute = GatedLaporanRouteImport.update({
   path: '/laporan',
   getParentRoute: () => GatedRoute,
 } as any)
+const GatedKickRoute = GatedKickRouteImport.update({
+  id: '/kick',
+  path: '/kick',
+  getParentRoute: () => GatedRoute,
+} as any)
 const GatedKalkulatorRoute = GatedKalkulatorRouteImport.update({
   id: '/kalkulator',
   path: '/kalkulator',
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/unlock': typeof UnlockRoute
   '/akurasi': typeof GatedAkurasiRoute
   '/kalkulator': typeof GatedKalkulatorRoute
+  '/kick': typeof GatedKickRoute
   '/laporan': typeof GatedLaporanRoute
   '/live': typeof GatedLiveRoute
   '/otak-ai': typeof GatedOtakAiRoute
@@ -92,6 +99,7 @@ export interface FileRoutesByTo {
   '/unlock': typeof UnlockRoute
   '/akurasi': typeof GatedAkurasiRoute
   '/kalkulator': typeof GatedKalkulatorRoute
+  '/kick': typeof GatedKickRoute
   '/laporan': typeof GatedLaporanRoute
   '/live': typeof GatedLiveRoute
   '/otak-ai': typeof GatedOtakAiRoute
@@ -106,6 +114,7 @@ export interface FileRoutesById {
   '/unlock': typeof UnlockRoute
   '/_gated/akurasi': typeof GatedAkurasiRoute
   '/_gated/kalkulator': typeof GatedKalkulatorRoute
+  '/_gated/kick': typeof GatedKickRoute
   '/_gated/laporan': typeof GatedLaporanRoute
   '/_gated/live': typeof GatedLiveRoute
   '/_gated/otak-ai': typeof GatedOtakAiRoute
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
     | '/unlock'
     | '/akurasi'
     | '/kalkulator'
+    | '/kick'
     | '/laporan'
     | '/live'
     | '/otak-ai'
@@ -132,6 +142,7 @@ export interface FileRouteTypes {
     | '/unlock'
     | '/akurasi'
     | '/kalkulator'
+    | '/kick'
     | '/laporan'
     | '/live'
     | '/otak-ai'
@@ -145,6 +156,7 @@ export interface FileRouteTypes {
     | '/unlock'
     | '/_gated/akurasi'
     | '/_gated/kalkulator'
+    | '/_gated/kick'
     | '/_gated/laporan'
     | '/_gated/live'
     | '/_gated/otak-ai'
@@ -224,6 +236,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GatedLaporanRouteImport
       parentRoute: typeof GatedRoute
     }
+    '/_gated/kick': {
+      id: '/_gated/kick'
+      path: '/kick'
+      fullPath: '/kick'
+      preLoaderRoute: typeof GatedKickRouteImport
+      parentRoute: typeof GatedRoute
+    }
     '/_gated/kalkulator': {
       id: '/_gated/kalkulator'
       path: '/kalkulator'
@@ -244,6 +263,7 @@ declare module '@tanstack/react-router' {
 interface GatedRouteChildren {
   GatedAkurasiRoute: typeof GatedAkurasiRoute
   GatedKalkulatorRoute: typeof GatedKalkulatorRoute
+  GatedKickRoute: typeof GatedKickRoute
   GatedLaporanRoute: typeof GatedLaporanRoute
   GatedLiveRoute: typeof GatedLiveRoute
   GatedOtakAiRoute: typeof GatedOtakAiRoute
@@ -256,6 +276,7 @@ interface GatedRouteChildren {
 const GatedRouteChildren: GatedRouteChildren = {
   GatedAkurasiRoute: GatedAkurasiRoute,
   GatedKalkulatorRoute: GatedKalkulatorRoute,
+  GatedKickRoute: GatedKickRoute,
   GatedLaporanRoute: GatedLaporanRoute,
   GatedLiveRoute: GatedLiveRoute,
   GatedOtakAiRoute: GatedOtakAiRoute,
