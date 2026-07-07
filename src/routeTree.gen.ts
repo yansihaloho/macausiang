@@ -18,6 +18,7 @@ import { Route as GatedPrediksiRouteImport } from './routes/_gated.prediksi'
 import { Route as GatedLiveRouteImport } from './routes/_gated.live'
 import { Route as GatedKickRouteImport } from './routes/_gated.kick'
 import { Route as GatedKalkulatorRouteImport } from './routes/_gated.kalkulator'
+import { Route as GatedAkurasiRouteImport } from './routes/_gated.akurasi'
 
 const UnlockRoute = UnlockRouteImport.update({
   id: '/unlock',
@@ -63,10 +64,16 @@ const GatedKalkulatorRoute = GatedKalkulatorRouteImport.update({
   path: '/kalkulator',
   getParentRoute: () => GatedRoute,
 } as any)
+const GatedAkurasiRoute = GatedAkurasiRouteImport.update({
+  id: '/akurasi',
+  path: '/akurasi',
+  getParentRoute: () => GatedRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof GatedIndexRoute
   '/unlock': typeof UnlockRoute
+  '/akurasi': typeof GatedAkurasiRoute
   '/kalkulator': typeof GatedKalkulatorRoute
   '/kick': typeof GatedKickRoute
   '/live': typeof GatedLiveRoute
@@ -76,6 +83,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/unlock': typeof UnlockRoute
+  '/akurasi': typeof GatedAkurasiRoute
   '/kalkulator': typeof GatedKalkulatorRoute
   '/kick': typeof GatedKickRoute
   '/live': typeof GatedLiveRoute
@@ -88,6 +96,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_gated': typeof GatedRouteWithChildren
   '/unlock': typeof UnlockRoute
+  '/_gated/akurasi': typeof GatedAkurasiRoute
   '/_gated/kalkulator': typeof GatedKalkulatorRoute
   '/_gated/kick': typeof GatedKickRoute
   '/_gated/live': typeof GatedLiveRoute
@@ -101,6 +110,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/unlock'
+    | '/akurasi'
     | '/kalkulator'
     | '/kick'
     | '/live'
@@ -110,6 +120,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/unlock'
+    | '/akurasi'
     | '/kalkulator'
     | '/kick'
     | '/live'
@@ -121,6 +132,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_gated'
     | '/unlock'
+    | '/_gated/akurasi'
     | '/_gated/kalkulator'
     | '/_gated/kick'
     | '/_gated/live'
@@ -200,10 +212,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GatedKalkulatorRouteImport
       parentRoute: typeof GatedRoute
     }
+    '/_gated/akurasi': {
+      id: '/_gated/akurasi'
+      path: '/akurasi'
+      fullPath: '/akurasi'
+      preLoaderRoute: typeof GatedAkurasiRouteImport
+      parentRoute: typeof GatedRoute
+    }
   }
 }
 
 interface GatedRouteChildren {
+  GatedAkurasiRoute: typeof GatedAkurasiRoute
   GatedKalkulatorRoute: typeof GatedKalkulatorRoute
   GatedKickRoute: typeof GatedKickRoute
   GatedLiveRoute: typeof GatedLiveRoute
@@ -214,6 +234,7 @@ interface GatedRouteChildren {
 }
 
 const GatedRouteChildren: GatedRouteChildren = {
+  GatedAkurasiRoute: GatedAkurasiRoute,
   GatedKalkulatorRoute: GatedKalkulatorRoute,
   GatedKickRoute: GatedKickRoute,
   GatedLiveRoute: GatedLiveRoute,
