@@ -1,20 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { TIME_SLOTS } from "@/lib/lottery.functions";
+import { lotteryQueryOptions } from "@/lib/lottery-query";
 import {
-  MOCK_RESULTS,
-  TIME_SLOTS,
-  buildAiPrediction,
   buildLog,
+  buildPrediction,
   digitFrequency,
-} from "@/lib/mock-data";
+} from "@/lib/lottery-analysis";
 import {
   TrendingUp,
   TrendingDown,
-  Wallet,
   Target,
   Trophy,
   Flame,
+  Database,
 } from "lucide-react";
 import {
   Bar,
@@ -28,35 +29,41 @@ import {
 } from "recharts";
 
 export const Route = createFileRoute("/_gated/")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(lotteryQueryOptions),
   component: DashboardPage,
 });
 
 function DashboardPage() {
-  const log = buildLog();
+  const { data: feed } = useSuspenseQuery(lotteryQueryOptions);
+  const rows = feed.rows;
+  const log = buildLog(rows);
   const wins = log.filter((r) => r.status === "WIN").length;
   const losses = log.filter((r) => r.status === "LOSS").length;
   const pending = log.filter((r) => r.status === "PENDING").length;
   const wlRatio = losses ? (wins / losses).toFixed(2) : "∞";
 
-  const freq = digitFrequency(MOCK_RESULTS);
+  const freq = digitFrequency(rows);
+  const totalDraws = rows.reduce(
+    (a, r) => a + TIME_SLOTS.filter((s) => r.results[s] !== "-").length,
+    0,
+  );
   const hottest = [...freq].sort((a, b) => b.count - a.count).slice(0, 3);
   const coldest = [...freq].sort((a, b) => a.count - b.count).slice(0, 3);
-  const today = MOCK_RESULTS[0];
-  const pred = buildAiPrediction(9);
+  const today = rows[0];
+  const pred = buildPrediction(rows);
 
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Stat
-          icon={<Wallet className="h-4 w-4" />}
-          label="Saldo Demo"
-          value="Rp 12.450.000"
-          delta="+Rp 850.000 hari ini"
-          up
+          icon={<Database className="h-4 w-4" />}
+          label="Total Draw"
+          value={String(totalDraws)}
+          delta={`${rows.length} hari · nomorupdate.org`}
         />
         <Stat
           icon={<Trophy className="h-4 w-4" />}
-          label="Win / Loss"
+          label="Backtest Win/Loss"
           value={`${wins} / ${losses}`}
           delta={`Ratio ${wlRatio}`}
           up={wins >= losses}
@@ -71,7 +78,7 @@ function DashboardPage() {
           icon={<Flame className="h-4 w-4" />}
           label="Digit Terpanas"
           value={hottest.map((h) => h.digit).join(" · ")}
-          delta={`${hottest[0].count}× dalam ${MOCK_RESULTS.length} hari`}
+          delta={`${hottest[0].count}× dalam ${rows.length} hari`}
           up
         />
       </div>
@@ -81,7 +88,7 @@ function DashboardPage() {
           <CardHeader className="flex-row items-center justify-between">
             <CardTitle className="text-sm">Heat Map Digit — 10 hari terakhir</CardTitle>
             <Badge variant="secondary" className="text-[10px]">
-              {MOCK_RESULTS.length * TIME_SLOTS.length} draws
+              {totalDraws} draws
             </Badge>
           </CardHeader>
           <CardContent className="h-64">
@@ -117,7 +124,7 @@ function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm">Prediksi Hari Ini</CardTitle>
+            <CardTitle className="text-sm">Prediksi Berikutnya · Analisa Real</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <PredBlock label="BBFS 5" value={pred.bbfs5} />
@@ -144,7 +151,9 @@ function DashboardPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm">Result Terkini · {today.hari}, {today.tanggal}</CardTitle>
+          <CardTitle className="text-sm">
+            Result Terkini · {today.hari}, {today.tanggal}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-6">
@@ -165,6 +174,10 @@ function DashboardPage() {
               );
             })}
           </div>
+          <p className="mt-3 text-[10px] text-muted-foreground">
+            Sumber: {feed.source} · terakhir diambil{" "}
+            {new Date(feed.fetchedAt).toLocaleString("id-ID")}
+          </p>
         </CardContent>
       </Card>
     </div>
