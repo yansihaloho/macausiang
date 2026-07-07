@@ -10,32 +10,41 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnlockRouteImport } from './routes/unlock'
+import { Route as GatedRouteImport } from './routes/_gated'
 
 const UnlockRoute = UnlockRouteImport.update({
   id: '/unlock',
   path: '/unlock',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GatedRoute = GatedRouteImport.update({
+  id: '/_gated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof GatedRoute
   '/unlock': typeof UnlockRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof GatedRoute
   '/unlock': typeof UnlockRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/_gated': typeof GatedRoute
   '/unlock': typeof UnlockRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/unlock'
+  fullPaths: '/' | '/unlock'
   fileRoutesByTo: FileRoutesByTo
-  to: '/unlock'
-  id: '__root__' | '/unlock'
+  to: '/' | '/unlock'
+  id: '__root__' | '/_gated' | '/unlock'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  GatedRoute: typeof GatedRoute
   UnlockRoute: typeof UnlockRoute
 }
 
@@ -48,10 +57,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UnlockRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_gated': {
+      id: '/_gated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof GatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  GatedRoute: GatedRoute,
   UnlockRoute: UnlockRoute,
 }
 export const routeTree = rootRouteImport
