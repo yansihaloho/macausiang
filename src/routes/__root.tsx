@@ -77,14 +77,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "4D Macau — Strategi BESAR" },
+      { name: "description", content: "Dashboard prediksi 4D Macau: kalkulator Martingale, Smart AI 20-engine, TARDAL, tracker akurasi, live draw." },
+      { property: "og:title", content: "4D Macau — Strategi BESAR" },
+      { property: "og:description", content: "Dashboard prediksi 4D Macau: kalkulator, Smart AI, TARDAL, akurasi & live draw." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       {
