@@ -14,6 +14,7 @@ import { Route as GatedRouteImport } from './routes/_gated'
 import { Route as GatedIndexRouteImport } from './routes/_gated.index'
 import { Route as GatedTardalRouteImport } from './routes/_gated.tardal'
 import { Route as GatedSmartAiRouteImport } from './routes/_gated.smart-ai'
+import { Route as GatedPrediksiRouteImport } from './routes/_gated.prediksi'
 import { Route as GatedLiveRouteImport } from './routes/_gated.live'
 import { Route as GatedKalkulatorRouteImport } from './routes/_gated.kalkulator'
 
@@ -41,6 +42,11 @@ const GatedSmartAiRoute = GatedSmartAiRouteImport.update({
   path: '/smart-ai',
   getParentRoute: () => GatedRoute,
 } as any)
+const GatedPrediksiRoute = GatedPrediksiRouteImport.update({
+  id: '/prediksi',
+  path: '/prediksi',
+  getParentRoute: () => GatedRoute,
+} as any)
 const GatedLiveRoute = GatedLiveRouteImport.update({
   id: '/live',
   path: '/live',
@@ -57,6 +63,7 @@ export interface FileRoutesByFullPath {
   '/unlock': typeof UnlockRoute
   '/kalkulator': typeof GatedKalkulatorRoute
   '/live': typeof GatedLiveRoute
+  '/prediksi': typeof GatedPrediksiRoute
   '/smart-ai': typeof GatedSmartAiRoute
   '/tardal': typeof GatedTardalRoute
 }
@@ -64,6 +71,7 @@ export interface FileRoutesByTo {
   '/unlock': typeof UnlockRoute
   '/kalkulator': typeof GatedKalkulatorRoute
   '/live': typeof GatedLiveRoute
+  '/prediksi': typeof GatedPrediksiRoute
   '/smart-ai': typeof GatedSmartAiRoute
   '/tardal': typeof GatedTardalRoute
   '/': typeof GatedIndexRoute
@@ -74,21 +82,37 @@ export interface FileRoutesById {
   '/unlock': typeof UnlockRoute
   '/_gated/kalkulator': typeof GatedKalkulatorRoute
   '/_gated/live': typeof GatedLiveRoute
+  '/_gated/prediksi': typeof GatedPrediksiRoute
   '/_gated/smart-ai': typeof GatedSmartAiRoute
   '/_gated/tardal': typeof GatedTardalRoute
   '/_gated/': typeof GatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/unlock' | '/kalkulator' | '/live' | '/smart-ai' | '/tardal'
+  fullPaths:
+    | '/'
+    | '/unlock'
+    | '/kalkulator'
+    | '/live'
+    | '/prediksi'
+    | '/smart-ai'
+    | '/tardal'
   fileRoutesByTo: FileRoutesByTo
-  to: '/unlock' | '/kalkulator' | '/live' | '/smart-ai' | '/tardal' | '/'
+  to:
+    | '/unlock'
+    | '/kalkulator'
+    | '/live'
+    | '/prediksi'
+    | '/smart-ai'
+    | '/tardal'
+    | '/'
   id:
     | '__root__'
     | '/_gated'
     | '/unlock'
     | '/_gated/kalkulator'
     | '/_gated/live'
+    | '/_gated/prediksi'
     | '/_gated/smart-ai'
     | '/_gated/tardal'
     | '/_gated/'
@@ -136,6 +160,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GatedSmartAiRouteImport
       parentRoute: typeof GatedRoute
     }
+    '/_gated/prediksi': {
+      id: '/_gated/prediksi'
+      path: '/prediksi'
+      fullPath: '/prediksi'
+      preLoaderRoute: typeof GatedPrediksiRouteImport
+      parentRoute: typeof GatedRoute
+    }
     '/_gated/live': {
       id: '/_gated/live'
       path: '/live'
@@ -156,6 +187,7 @@ declare module '@tanstack/react-router' {
 interface GatedRouteChildren {
   GatedKalkulatorRoute: typeof GatedKalkulatorRoute
   GatedLiveRoute: typeof GatedLiveRoute
+  GatedPrediksiRoute: typeof GatedPrediksiRoute
   GatedSmartAiRoute: typeof GatedSmartAiRoute
   GatedTardalRoute: typeof GatedTardalRoute
   GatedIndexRoute: typeof GatedIndexRoute
@@ -164,6 +196,7 @@ interface GatedRouteChildren {
 const GatedRouteChildren: GatedRouteChildren = {
   GatedKalkulatorRoute: GatedKalkulatorRoute,
   GatedLiveRoute: GatedLiveRoute,
+  GatedPrediksiRoute: GatedPrediksiRoute,
   GatedSmartAiRoute: GatedSmartAiRoute,
   GatedTardalRoute: GatedTardalRoute,
   GatedIndexRoute: GatedIndexRoute,
