@@ -64,10 +64,10 @@ function AkurasiPage() {
                 }}
               />
               <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Bar dataKey="bbfs5" fill="oklch(0.7 0.19 30)" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="bbfs7" fill="oklch(0.62 0.19 255)" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="bbfs9" fill="oklch(0.65 0.18 160)" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="top25" fill="oklch(0.7 0.15 300)" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="bbfs5" fill="#f97316" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="bbfs7" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="bbfs9" fill="#10b981" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="top25" fill="#a855f7" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
