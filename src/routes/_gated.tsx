@@ -61,7 +61,7 @@ function GatedLayout() {
             </div>
             <div className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
               <span className="flex h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
-              <span className="font-semibold">Demo Mode</span>
+              <span className="font-semibold">LIVE · nomorupdate.org</span>
             </div>
           </header>
           <main className="flex-1 overflow-x-hidden p-4 md:p-6">
