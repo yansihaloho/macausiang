@@ -11,6 +11,11 @@ import {
   FileText,
   Tv,
   LogOut,
+  Scale,
+  Zap,
+  Compass,
+  Grid3x3,
+  Coins,
 } from "lucide-react";
 import {
   Sidebar,
@@ -40,6 +45,11 @@ const NAV: NavItem[] = [
   { to: "/smart-ai", label: "Smart AI (CERDAS)", icon: Sparkles },
   { to: "/tardal", label: "TARDAL", icon: Layers },
   { to: "/prediksi", label: "Prediksi", icon: Target },
+  { to: "/klasifikasi", label: "Ganjil/Genap/Besar/Kecil", icon: Scale },
+  { to: "/colok-bebas", label: "Colok Bebas", icon: Zap },
+  { to: "/shio", label: "Prediksi Shio", icon: Compass },
+  { to: "/paito", label: "Paito Warna", icon: Grid3x3 },
+  { to: "/investasi", label: "Kalkulator Investasi", icon: Coins },
   { to: "/akurasi", label: "Akurasi Tracker", icon: Activity },
   { to: "/otak-ai", label: "Otak AI", icon: Brain },
   { to: "/laporan", label: "Laporan", icon: FileText },
