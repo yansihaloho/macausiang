@@ -16,6 +16,7 @@ import { Route as GatedTardalRouteImport } from './routes/_gated.tardal'
 import { Route as GatedSmartAiRouteImport } from './routes/_gated.smart-ai'
 import { Route as GatedShioRouteImport } from './routes/_gated.shio'
 import { Route as GatedPrediksiRouteImport } from './routes/_gated.prediksi'
+import { Route as GatedPaitoRouteImport } from './routes/_gated.paito'
 import { Route as GatedOtakAiRouteImport } from './routes/_gated.otak-ai'
 import { Route as GatedLiveRouteImport } from './routes/_gated.live'
 import { Route as GatedLaporanRouteImport } from './routes/_gated.laporan'
@@ -57,6 +58,11 @@ const GatedShioRoute = GatedShioRouteImport.update({
 const GatedPrediksiRoute = GatedPrediksiRouteImport.update({
   id: '/prediksi',
   path: '/prediksi',
+  getParentRoute: () => GatedRoute,
+} as any)
+const GatedPaitoRoute = GatedPaitoRouteImport.update({
+  id: '/paito',
+  path: '/paito',
   getParentRoute: () => GatedRoute,
 } as any)
 const GatedOtakAiRoute = GatedOtakAiRouteImport.update({
@@ -111,6 +117,7 @@ export interface FileRoutesByFullPath {
   '/laporan': typeof GatedLaporanRoute
   '/live': typeof GatedLiveRoute
   '/otak-ai': typeof GatedOtakAiRoute
+  '/paito': typeof GatedPaitoRoute
   '/prediksi': typeof GatedPrediksiRoute
   '/shio': typeof GatedShioRoute
   '/smart-ai': typeof GatedSmartAiRoute
@@ -126,6 +133,7 @@ export interface FileRoutesByTo {
   '/laporan': typeof GatedLaporanRoute
   '/live': typeof GatedLiveRoute
   '/otak-ai': typeof GatedOtakAiRoute
+  '/paito': typeof GatedPaitoRoute
   '/prediksi': typeof GatedPrediksiRoute
   '/shio': typeof GatedShioRoute
   '/smart-ai': typeof GatedSmartAiRoute
@@ -144,6 +152,7 @@ export interface FileRoutesById {
   '/_gated/laporan': typeof GatedLaporanRoute
   '/_gated/live': typeof GatedLiveRoute
   '/_gated/otak-ai': typeof GatedOtakAiRoute
+  '/_gated/paito': typeof GatedPaitoRoute
   '/_gated/prediksi': typeof GatedPrediksiRoute
   '/_gated/shio': typeof GatedShioRoute
   '/_gated/smart-ai': typeof GatedSmartAiRoute
@@ -163,6 +172,7 @@ export interface FileRouteTypes {
     | '/laporan'
     | '/live'
     | '/otak-ai'
+    | '/paito'
     | '/prediksi'
     | '/shio'
     | '/smart-ai'
@@ -178,6 +188,7 @@ export interface FileRouteTypes {
     | '/laporan'
     | '/live'
     | '/otak-ai'
+    | '/paito'
     | '/prediksi'
     | '/shio'
     | '/smart-ai'
@@ -195,6 +206,7 @@ export interface FileRouteTypes {
     | '/_gated/laporan'
     | '/_gated/live'
     | '/_gated/otak-ai'
+    | '/_gated/paito'
     | '/_gated/prediksi'
     | '/_gated/shio'
     | '/_gated/smart-ai'
@@ -256,6 +268,13 @@ declare module '@tanstack/react-router' {
       path: '/prediksi'
       fullPath: '/prediksi'
       preLoaderRoute: typeof GatedPrediksiRouteImport
+      parentRoute: typeof GatedRoute
+    }
+    '/_gated/paito': {
+      id: '/_gated/paito'
+      path: '/paito'
+      fullPath: '/paito'
+      preLoaderRoute: typeof GatedPaitoRouteImport
       parentRoute: typeof GatedRoute
     }
     '/_gated/otak-ai': {
@@ -326,6 +345,7 @@ interface GatedRouteChildren {
   GatedLaporanRoute: typeof GatedLaporanRoute
   GatedLiveRoute: typeof GatedLiveRoute
   GatedOtakAiRoute: typeof GatedOtakAiRoute
+  GatedPaitoRoute: typeof GatedPaitoRoute
   GatedPrediksiRoute: typeof GatedPrediksiRoute
   GatedShioRoute: typeof GatedShioRoute
   GatedSmartAiRoute: typeof GatedSmartAiRoute
@@ -342,6 +362,7 @@ const GatedRouteChildren: GatedRouteChildren = {
   GatedLaporanRoute: GatedLaporanRoute,
   GatedLiveRoute: GatedLiveRoute,
   GatedOtakAiRoute: GatedOtakAiRoute,
+  GatedPaitoRoute: GatedPaitoRoute,
   GatedPrediksiRoute: GatedPrediksiRoute,
   GatedShioRoute: GatedShioRoute,
   GatedSmartAiRoute: GatedSmartAiRoute,
