@@ -21,6 +21,7 @@ import { Route as GatedLaporanRouteImport } from './routes/_gated.laporan'
 import { Route as GatedKlasifikasiRouteImport } from './routes/_gated.klasifikasi'
 import { Route as GatedKickRouteImport } from './routes/_gated.kick'
 import { Route as GatedKalkulatorRouteImport } from './routes/_gated.kalkulator'
+import { Route as GatedColokBebasRouteImport } from './routes/_gated.colok-bebas'
 import { Route as GatedAkurasiRouteImport } from './routes/_gated.akurasi'
 
 const UnlockRoute = UnlockRouteImport.update({
@@ -82,6 +83,11 @@ const GatedKalkulatorRoute = GatedKalkulatorRouteImport.update({
   path: '/kalkulator',
   getParentRoute: () => GatedRoute,
 } as any)
+const GatedColokBebasRoute = GatedColokBebasRouteImport.update({
+  id: '/colok-bebas',
+  path: '/colok-bebas',
+  getParentRoute: () => GatedRoute,
+} as any)
 const GatedAkurasiRoute = GatedAkurasiRouteImport.update({
   id: '/akurasi',
   path: '/akurasi',
@@ -92,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/': typeof GatedIndexRoute
   '/unlock': typeof UnlockRoute
   '/akurasi': typeof GatedAkurasiRoute
+  '/colok-bebas': typeof GatedColokBebasRoute
   '/kalkulator': typeof GatedKalkulatorRoute
   '/kick': typeof GatedKickRoute
   '/klasifikasi': typeof GatedKlasifikasiRoute
@@ -105,6 +112,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/unlock': typeof UnlockRoute
   '/akurasi': typeof GatedAkurasiRoute
+  '/colok-bebas': typeof GatedColokBebasRoute
   '/kalkulator': typeof GatedKalkulatorRoute
   '/kick': typeof GatedKickRoute
   '/klasifikasi': typeof GatedKlasifikasiRoute
@@ -121,6 +129,7 @@ export interface FileRoutesById {
   '/_gated': typeof GatedRouteWithChildren
   '/unlock': typeof UnlockRoute
   '/_gated/akurasi': typeof GatedAkurasiRoute
+  '/_gated/colok-bebas': typeof GatedColokBebasRoute
   '/_gated/kalkulator': typeof GatedKalkulatorRoute
   '/_gated/kick': typeof GatedKickRoute
   '/_gated/klasifikasi': typeof GatedKlasifikasiRoute
@@ -138,6 +147,7 @@ export interface FileRouteTypes {
     | '/'
     | '/unlock'
     | '/akurasi'
+    | '/colok-bebas'
     | '/kalkulator'
     | '/kick'
     | '/klasifikasi'
@@ -151,6 +161,7 @@ export interface FileRouteTypes {
   to:
     | '/unlock'
     | '/akurasi'
+    | '/colok-bebas'
     | '/kalkulator'
     | '/kick'
     | '/klasifikasi'
@@ -166,6 +177,7 @@ export interface FileRouteTypes {
     | '/_gated'
     | '/unlock'
     | '/_gated/akurasi'
+    | '/_gated/colok-bebas'
     | '/_gated/kalkulator'
     | '/_gated/kick'
     | '/_gated/klasifikasi'
@@ -269,6 +281,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GatedKalkulatorRouteImport
       parentRoute: typeof GatedRoute
     }
+    '/_gated/colok-bebas': {
+      id: '/_gated/colok-bebas'
+      path: '/colok-bebas'
+      fullPath: '/colok-bebas'
+      preLoaderRoute: typeof GatedColokBebasRouteImport
+      parentRoute: typeof GatedRoute
+    }
     '/_gated/akurasi': {
       id: '/_gated/akurasi'
       path: '/akurasi'
@@ -281,6 +300,7 @@ declare module '@tanstack/react-router' {
 
 interface GatedRouteChildren {
   GatedAkurasiRoute: typeof GatedAkurasiRoute
+  GatedColokBebasRoute: typeof GatedColokBebasRoute
   GatedKalkulatorRoute: typeof GatedKalkulatorRoute
   GatedKickRoute: typeof GatedKickRoute
   GatedKlasifikasiRoute: typeof GatedKlasifikasiRoute
@@ -295,6 +315,7 @@ interface GatedRouteChildren {
 
 const GatedRouteChildren: GatedRouteChildren = {
   GatedAkurasiRoute: GatedAkurasiRoute,
+  GatedColokBebasRoute: GatedColokBebasRoute,
   GatedKalkulatorRoute: GatedKalkulatorRoute,
   GatedKickRoute: GatedKickRoute,
   GatedKlasifikasiRoute: GatedKlasifikasiRoute,
