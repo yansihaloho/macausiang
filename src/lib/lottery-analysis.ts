@@ -282,6 +282,132 @@ function emptyResults(): Record<Slot, string> {
   return { "00:01": "-", "13:00": "-", "16:00": "-", "19:00": "-", "22:00": "-", "23:00": "-" };
 }
 
+// ============================================================================
+// Klasifikasi 2D (Ganjil/Genap/Besar/Kecil) — depan (KEPALA-EKOR of 4D) & ekor
+// ============================================================================
+
+/** Ganjil-Genap-Besar-Kecil stats atas basis 4D result (depan = 2D belakang, 45+ split). */
+export function classifyStats(rows: ResultRow[]) {
+  const draws = iterDraws(rows);
+  const stats = {
+    ganjil: 0, genap: 0, besar: 0, kecil: 0,
+    ganjilEkor: 0, genapEkor: 0, besarEkor: 0, kecilEkor: 0,
+    total: 0,
+  };
+  const timeline: {
+    tanggal: string;
+    slot: Slot;
+    value: string;
+    ganjil: boolean;
+    besar: boolean;
+    ganjilEkor: boolean;
+    besarEkor: boolean;
+  }[] = [];
+  for (const { row, slot, value } of draws) {
+    if (value.length !== 4) continue;
+    const back2 = parseInt(value.slice(-2), 10);
+    const ekor = parseInt(value[3], 10);
+    if (isNaN(back2) || isNaN(ekor)) continue;
+    const ganjil = back2 % 2 === 1;
+    const besar = back2 >= 50;
+    const ganjilEkor = ekor % 2 === 1;
+    const besarEkor = ekor >= 5;
+    stats.total++;
+    if (ganjil) stats.ganjil++; else stats.genap++;
+    if (besar) stats.besar++; else stats.kecil++;
+    if (ganjilEkor) stats.ganjilEkor++; else stats.genapEkor++;
+    if (besarEkor) stats.besarEkor++; else stats.kecilEkor++;
+    timeline.push({
+      tanggal: row.tanggal,
+      slot,
+      value,
+      ganjil,
+      besar,
+      ganjilEkor,
+      besarEkor,
+    });
+  }
+  return { stats, timeline };
+}
+
+/** Colok Bebas: seberapa sering tiap digit muncul di 4D (min 1x) — recent window. */
+export function colokBebas(rows: ResultRow[], recentN = 30) {
+  const draws = iterDraws(rows).slice(0, recentN);
+  const appear = Array(10).fill(0);
+  for (const { value } of draws) {
+    const seen = new Set(value.split(""));
+    seen.forEach((c) => {
+      const d = c.charCodeAt(0) - 48;
+      if (d >= 0 && d <= 9) appear[d]++;
+    });
+  }
+  const total = draws.length || 1;
+  return appear
+    .map((count, digit) => ({
+      digit,
+      count,
+      pct: Math.round((count / total) * 1000) / 10,
+    }))
+    .sort((a, b) => b.pct - a.pct);
+}
+
+// ============================================================================
+// Shio 2026 — Tahun Kuda (mulai dari Kuda = 01)
+// ============================================================================
+
+export const SHIO_2026 = [
+  "Kuda", "Ular", "Naga", "Kelinci", "Harimau", "Kerbau",
+  "Tikus", "Babi", "Anjing", "Ayam", "Monyet", "Kambing",
+] as const;
+export type ShioName = (typeof SHIO_2026)[number];
+
+export function shioOf(back2: string): ShioName {
+  let v = parseInt(back2, 10);
+  if (isNaN(v)) return "Kuda";
+  if (v === 0) v = 100;
+  let mod = v % 12;
+  if (mod === 0) mod = 12;
+  return SHIO_2026[mod - 1];
+}
+
+export function shioStats(rows: ResultRow[]) {
+  const draws = iterDraws(rows);
+  const total = draws.length || 1;
+  const counts: Record<ShioName, number> = Object.fromEntries(
+    SHIO_2026.map((s) => [s, 0]),
+  ) as Record<ShioName, number>;
+  const lastSeenIdx: Record<ShioName, number> = Object.fromEntries(
+    SHIO_2026.map((s) => [s, -1]),
+  ) as Record<ShioName, number>;
+  draws.forEach((d, idx) => {
+    if (d.value.length !== 4) return;
+    const shio = shioOf(d.value.slice(-2));
+    counts[shio]++;
+    if (lastSeenIdx[shio] === -1) lastSeenIdx[shio] = idx;
+  });
+  return SHIO_2026.map((name) => ({
+    name,
+    count: counts[name],
+    gap: lastSeenIdx[name] === -1 ? draws.length : lastSeenIdx[name],
+    pct: Math.round((counts[name] / total) * 1000) / 10,
+  })).sort((a, b) => b.count - a.count);
+}
+
+/** Nomor 2D per shio (0-99, siklus 12). */
+export function shioNumbers(name: ShioName): string[] {
+  const idx = SHIO_2026.indexOf(name);
+  const out: string[] = [];
+  for (let n = 1; n <= 100; n++) {
+    let mod = n % 12;
+    if (mod === 0) mod = 12;
+    if (mod - 1 === idx) {
+      const s = (n === 100 ? 0 : n).toString().padStart(2, "0");
+      out.push(s);
+    }
+  }
+  return out.sort();
+}
+
 /** Prediction log: for each historical draw (newest 24), compute BBFS7 from prior data and label WIN/LOSS. */
 export function buildLog(rows: ResultRow[], limit = 24) {
   const all = iterDraws(rows).reverse(); // chronological
