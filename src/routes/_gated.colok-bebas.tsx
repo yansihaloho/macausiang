@@ -3,7 +3,8 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { lotteryQueryOptions } from "@/lib/lottery-query";
-import { colokBebas } from "@/lib/lottery-analysis";
+import { colokBebas, colokBebasBySlot } from "@/lib/lottery-analysis";
+import { TIME_SLOTS } from "@/lib/lottery.functions";
 import { Zap } from "lucide-react";
 
 export const Route = createFileRoute("/_gated/colok-bebas")({
@@ -15,6 +16,10 @@ function ColokBebasPage() {
   const { data: feed } = useSuspenseQuery(lotteryQueryOptions);
   const recent = useMemo(() => colokBebas(feed.rows, 30), [feed]);
   const long = useMemo(() => colokBebas(feed.rows, 90), [feed]);
+  const perSlot = useMemo(
+    () => TIME_SLOTS.map((s) => colokBebasBySlot(feed.rows, s, 30)),
+    [feed],
+  );
   const top4 = recent.slice(0, 4);
 
   return (
@@ -61,6 +66,44 @@ function ColokBebasPage() {
           </Card>
         ))}
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm">Rekomendasi Per Slot Jam (30 draw)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {perSlot.map((panel) => (
+              <div key={panel.slot} className="rounded-xl border border-border bg-card p-3">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="font-mono text-sm font-black text-primary">{panel.slot}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                    {panel.samples} draw
+                  </span>
+                </div>
+                <div className="mb-2 flex gap-1.5">
+                  {panel.digits.slice(0, 4).map((d) => (
+                    <span key={d.digit} className="rounded-md bg-primary/15 px-2 py-1 font-mono text-sm font-black text-primary">
+                      {d.digit}
+                    </span>
+                  ))}
+                </div>
+                <div className="space-y-1">
+                  {panel.digits.slice(0, 6).map((d) => (
+                    <div key={d.digit} className="flex items-center gap-2 text-[11px]">
+                      <span className="w-4 font-mono font-bold text-foreground">{d.digit}</span>
+                      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+                        <div className="h-full bg-primary" style={{ width: `${d.pct}%` }} />
+                      </div>
+                      <span className="w-10 text-right font-mono text-muted-foreground">{d.pct}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
