@@ -3,7 +3,8 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { lotteryQueryOptions } from "@/lib/lottery-query";
-import { shioStats, shioNumbers, type ShioName } from "@/lib/lottery-analysis";
+import { shioStats, shioStatsBySlot, shioNumbers, type ShioName } from "@/lib/lottery-analysis";
+import { TIME_SLOTS } from "@/lib/lottery.functions";
 import { Compass } from "lucide-react";
 
 export const Route = createFileRoute("/_gated/shio")({
@@ -14,6 +15,10 @@ export const Route = createFileRoute("/_gated/shio")({
 function ShioPage() {
   const { data: feed } = useSuspenseQuery(lotteryQueryOptions);
   const stats = useMemo(() => shioStats(feed.rows), [feed]);
+  const perSlot = useMemo(
+    () => TIME_SLOTS.map((s) => shioStatsBySlot(feed.rows, s)),
+    [feed],
+  );
   const [selected, setSelected] = useState<ShioName>(stats[0]?.name ?? "Kuda");
   const nums = shioNumbers(selected);
   const maxCount = stats[0]?.count || 1;
@@ -64,6 +69,43 @@ function ShioPage() {
             {nums.map((n) => (
               <span key={n} className="rounded-md bg-primary/15 px-2.5 py-1 font-mono text-xs font-black text-primary">{n}</span>
             ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm">Shio Terkuat Per Slot Jam</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {perSlot.map((panel) => {
+              const top3 = panel.items.slice(0, 3);
+              const max = top3[0]?.count || 1;
+              return (
+                <div key={panel.slot} className="rounded-xl border border-border bg-card p-3">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="font-mono text-sm font-black text-primary">{panel.slot}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                      {panel.samples} draw
+                    </span>
+                  </div>
+                  <div className="space-y-1.5">
+                    {top3.map((it) => (
+                      <div key={it.name} className="flex items-center gap-2 text-[11px]">
+                        <span className="w-16 font-bold text-foreground">{it.name}</span>
+                        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+                          <div className="h-full bg-primary" style={{ width: `${Math.round((it.count / max) * 100)}%` }} />
+                        </div>
+                        <span className="w-14 text-right font-mono text-muted-foreground">
+                          {it.count}× · g{it.gap}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </CardContent>
       </Card>

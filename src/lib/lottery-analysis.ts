@@ -15,6 +15,16 @@ function iterDraws(rows: ResultRow[]): { row: ResultRow; slot: Slot; value: stri
   return out;
 }
 
+/** Filter draws to a single slot (newest → oldest). */
+function iterDrawsForSlot(rows: ResultRow[], slot: Slot) {
+  const out: { row: ResultRow; slot: Slot; value: string }[] = [];
+  for (const row of rows) {
+    const v = row.results[slot];
+    if (v && v !== "-") out.push({ row, slot, value: v });
+  }
+  return out;
+}
+
 /** Digit frequency (0..9) across all 4D digits in all valid draws. */
 export function digitFrequency(rows: ResultRow[]) {
   const freq = Array(10).fill(0);
@@ -351,6 +361,31 @@ export function colokBebas(rows: ResultRow[], recentN = 30) {
     .sort((a, b) => b.pct - a.pct);
 }
 
+/** Colok Bebas per slot jam — hitung probabilitas digit muncul di 4D hanya untuk slot itu. */
+export function colokBebasBySlot(rows: ResultRow[], slot: Slot, recentN = 30) {
+  const draws = iterDrawsForSlot(rows, slot).slice(0, recentN);
+  const appear = Array(10).fill(0);
+  for (const { value } of draws) {
+    const seen = new Set(value.split(""));
+    seen.forEach((c) => {
+      const d = c.charCodeAt(0) - 48;
+      if (d >= 0 && d <= 9) appear[d]++;
+    });
+  }
+  const total = draws.length || 1;
+  return {
+    slot,
+    samples: draws.length,
+    digits: appear
+      .map((count, digit) => ({
+        digit,
+        count,
+        pct: Math.round((count / total) * 1000) / 10,
+      }))
+      .sort((a, b) => b.pct - a.pct),
+  };
+}
+
 // ============================================================================
 // Shio 2026 — Tahun Kuda (mulai dari Kuda = 01)
 // ============================================================================
@@ -391,6 +426,30 @@ export function shioStats(rows: ResultRow[]) {
     gap: lastSeenIdx[name] === -1 ? draws.length : lastSeenIdx[name],
     pct: Math.round((counts[name] / total) * 1000) / 10,
   })).sort((a, b) => b.count - a.count);
+}
+
+/** Shio stats per slot jam. */
+export function shioStatsBySlot(rows: ResultRow[], slot: Slot) {
+  const draws = iterDrawsForSlot(rows, slot);
+  const total = draws.length || 1;
+  const counts = Object.fromEntries(SHIO_2026.map((s) => [s, 0])) as Record<ShioName, number>;
+  const lastSeenIdx = Object.fromEntries(SHIO_2026.map((s) => [s, -1])) as Record<ShioName, number>;
+  draws.forEach((d, idx) => {
+    if (d.value.length !== 4) return;
+    const shio = shioOf(d.value.slice(-2));
+    counts[shio]++;
+    if (lastSeenIdx[shio] === -1) lastSeenIdx[shio] = idx;
+  });
+  return {
+    slot,
+    samples: draws.length,
+    items: SHIO_2026.map((name) => ({
+      name,
+      count: counts[name],
+      gap: lastSeenIdx[name] === -1 ? draws.length : lastSeenIdx[name],
+      pct: Math.round((counts[name] / total) * 1000) / 10,
+    })).sort((a, b) => b.count - a.count),
+  };
 }
 
 /** Nomor 2D per shio (0-99, siklus 12). */
