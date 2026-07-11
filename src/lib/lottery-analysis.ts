@@ -53,6 +53,9 @@ function iterDrawsForSlot(rows: ResultRow[], slot: Slot) {
 
 /** Digit frequency (0..9) across all 4D digits in all valid draws. */
 export function digitFrequency(rows: ResultRow[]) {
+  return memo(rows, "digitFrequency", () => digitFrequencyImpl(rows));
+}
+function digitFrequencyImpl(rows: ResultRow[]) {
   const freq = Array(10).fill(0);
   let total = 0;
   for (const { value } of iterDraws(rows)) {
@@ -93,6 +96,9 @@ export function digitGaps(rows: ResultRow[]) {
 
 /** Per-position frequency for AS / KOP / KEPALA / EKOR (thousand/hundred/ten/one). */
 export function positionFrequency(rows: ResultRow[]) {
+  return memo(rows, "positionFrequency", () => positionFrequencyImpl(rows));
+}
+function positionFrequencyImpl(rows: ResultRow[]) {
   const pos = [Array(10).fill(0), Array(10).fill(0), Array(10).fill(0), Array(10).fill(0)];
   for (const { value } of iterDraws(rows)) {
     for (let i = 0; i < 4; i++) {
@@ -135,6 +141,9 @@ function positionMarkov(rows: ResultRow[]) {
 
 /** BBFS + Top-25 built from real historical analysis. */
 export function buildPrediction(rows: ResultRow[]) {
+  return memo(rows, "buildPrediction", () => buildPredictionImpl(rows));
+}
+function buildPredictionImpl(rows: ResultRow[]) {
   const freq = digitFrequency(rows);
   const gaps = digitGaps(rows);
   const pos = positionFrequency(rows);
@@ -210,6 +219,9 @@ export function buildSlotPrediction(rows: ResultRow[], slot: Slot) {
 
 /** TARDAL data derived from real per-position frequency + last-draw Markov. */
 export function buildTardal(rows: ResultRow[]) {
+  return memo(rows, "buildTardal", () => buildTardalImpl(rows));
+}
+function buildTardalImpl(rows: ResultRow[]) {
   const pos = positionFrequency(rows);
   return pos.map(({ position, digits }) => ({
     position,
@@ -263,6 +275,9 @@ export function engineConfidences(rows: ResultRow[]) {
 
 /** Accuracy: apply prediction generated from data up to draw N to draw N+1. Sliding window per slot. */
 export function buildAccuracy(rows: ResultRow[]) {
+  return memo(rows, "buildAccuracy", () => buildAccuracyImpl(rows));
+}
+function buildAccuracyImpl(rows: ResultRow[]) {
   // Chronological
   const all = iterDraws(rows).reverse();
   const bySlot: Record<Slot, { hitsBBFS5: number; hitsBBFS7: number; hitsBBFS9: number; hitsTop25: number; total: number }> = {
@@ -324,6 +339,9 @@ function emptyResults(): Record<Slot, string> {
 
 /** Ganjil-Genap-Besar-Kecil stats atas basis 4D result (depan = 2D belakang, 45+ split). */
 export function classifyStats(rows: ResultRow[]) {
+  return memo(rows, "classifyStats", () => classifyStatsImpl(rows));
+}
+function classifyStatsImpl(rows: ResultRow[]) {
   const draws = iterDraws(rows);
   const stats = {
     ganjil: 0, genap: 0, besar: 0, kecil: 0,
@@ -368,6 +386,9 @@ export function classifyStats(rows: ResultRow[]) {
 
 /** Colok Bebas: seberapa sering tiap digit muncul di 4D (min 1x) — recent window. */
 export function colokBebas(rows: ResultRow[], recentN = 30) {
+  return memo(rows, `colokBebas:${recentN}`, () => colokBebasImpl(rows, recentN));
+}
+function colokBebasImpl(rows: ResultRow[], recentN: number) {
   const draws = iterDraws(rows).slice(0, recentN);
   const appear = Array(10).fill(0);
   for (const { value } of draws) {
@@ -389,6 +410,11 @@ export function colokBebas(rows: ResultRow[], recentN = 30) {
 
 /** Colok Bebas per slot jam — hitung probabilitas digit muncul di 4D hanya untuk slot itu. */
 export function colokBebasBySlot(rows: ResultRow[], slot: Slot, recentN = 30) {
+  return memo(rows, `colokBebasBySlot:${slot}:${recentN}`, () =>
+    colokBebasBySlotImpl(rows, slot, recentN),
+  );
+}
+function colokBebasBySlotImpl(rows: ResultRow[], slot: Slot, recentN: number) {
   const draws = iterDrawsForSlot(rows, slot).slice(0, recentN);
   const appear = Array(10).fill(0);
   for (const { value } of draws) {
@@ -432,6 +458,9 @@ export function shioOf(back2: string): ShioName {
 }
 
 export function shioStats(rows: ResultRow[]) {
+  return memo(rows, "shioStats", () => shioStatsImpl(rows));
+}
+function shioStatsImpl(rows: ResultRow[]) {
   const draws = iterDraws(rows);
   const total = draws.length || 1;
   const counts: Record<ShioName, number> = Object.fromEntries(
@@ -456,6 +485,9 @@ export function shioStats(rows: ResultRow[]) {
 
 /** Shio stats per slot jam. */
 export function shioStatsBySlot(rows: ResultRow[], slot: Slot) {
+  return memo(rows, `shioStatsBySlot:${slot}`, () => shioStatsBySlotImpl(rows, slot));
+}
+function shioStatsBySlotImpl(rows: ResultRow[], slot: Slot) {
   const draws = iterDrawsForSlot(rows, slot);
   const total = draws.length || 1;
   const counts = Object.fromEntries(SHIO_2026.map((s) => [s, 0])) as Record<ShioName, number>;
@@ -495,6 +527,9 @@ export function shioNumbers(name: ShioName): string[] {
 
 /** Prediction log: for each historical draw (newest 24), compute BBFS7 from prior data and label WIN/LOSS. */
 export function buildLog(rows: ResultRow[], limit = 24) {
+  return memo(rows, `buildLog:${limit}`, () => buildLogImpl(rows, limit));
+}
+function buildLogImpl(rows: ResultRow[], limit: number) {
   const all = iterDraws(rows).reverse(); // chronological
   const start = Math.max(30, all.length - limit); // need history before eval
   const entries: {
