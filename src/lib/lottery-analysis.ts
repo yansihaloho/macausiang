@@ -3,26 +3,52 @@ import { TIME_SLOTS, type ResultRow, type Slot } from "./lottery.functions";
 export { TIME_SLOTS };
 export type { ResultRow, Slot };
 
-function iterDraws(rows: ResultRow[]): { row: ResultRow; slot: Slot; value: string }[] {
-  const out: { row: ResultRow; slot: Slot; value: string }[] = [];
-  // Rows come newest-first from source. Iterate newest → oldest.
-  for (const row of rows) {
-    for (const slot of TIME_SLOTS) {
-      const v = row.results[slot];
-      if (v && v !== "-") out.push({ row, slot, value: v });
-    }
+// ============================================================================
+// Memoization layer
+// ----------------------------------------------------------------------------
+// React Query mengembalikan referensi array `rows` yang sama sampai refetch
+// berikutnya. Kita gunakan WeakMap agar hasil kalkulasi mahal ter-cache per
+// feed, otomatis ter-GC saat feed baru menggantikan yang lama, dan dibagi
+// antar halaman tanpa perlu store global.
+// ============================================================================
+
+const memoStore = new WeakMap<ResultRow[], Map<string, unknown>>();
+
+function memo<T>(rows: ResultRow[], key: string, compute: () => T): T {
+  let bucket = memoStore.get(rows);
+  if (!bucket) {
+    bucket = new Map();
+    memoStore.set(rows, bucket);
   }
-  return out;
+  if (bucket.has(key)) return bucket.get(key) as T;
+  const value = compute();
+  bucket.set(key, value);
+  return value;
+}
+
+function iterDraws(rows: ResultRow[]): { row: ResultRow; slot: Slot; value: string }[] {
+  return memo(rows, "iterDraws", () => {
+    const out: { row: ResultRow; slot: Slot; value: string }[] = [];
+    for (const row of rows) {
+      for (const slot of TIME_SLOTS) {
+        const v = row.results[slot];
+        if (v && v !== "-") out.push({ row, slot, value: v });
+      }
+    }
+    return out;
+  });
 }
 
 /** Filter draws to a single slot (newest → oldest). */
 function iterDrawsForSlot(rows: ResultRow[], slot: Slot) {
-  const out: { row: ResultRow; slot: Slot; value: string }[] = [];
-  for (const row of rows) {
-    const v = row.results[slot];
-    if (v && v !== "-") out.push({ row, slot, value: v });
-  }
-  return out;
+  return memo(rows, `iterDraws:${slot}`, () => {
+    const out: { row: ResultRow; slot: Slot; value: string }[] = [];
+    for (const row of rows) {
+      const v = row.results[slot];
+      if (v && v !== "-") out.push({ row, slot, value: v });
+    }
+    return out;
+  });
 }
 
 /** Digit frequency (0..9) across all 4D digits in all valid draws. */
