@@ -12,6 +12,7 @@ import {
   LogOut,
   Zap,
   Compass,
+  Sigma,
 } from "lucide-react";
 import {
   Sidebar,
@@ -40,6 +41,7 @@ const NAV: NavItem[] = [
   { to: "/kalkulator", label: "Kalkulator", icon: Calculator },
   { to: "/smart-ai", label: "Smart AI (CERDAS)", icon: Sparkles },
   { to: "/tardal", label: "TARDAL", icon: Layers },
+  { to: "/bbfs", label: "BBFS Generator", icon: Sigma },
   { to: "/prediksi", label: "Prediksi", icon: Target },
   { to: "/colok-bebas", label: "Colok Bebas", icon: Zap },
   { to: "/shio", label: "Prediksi Shio", icon: Compass },
