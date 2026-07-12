@@ -18,6 +18,8 @@ const PAGE_TITLES: Record<string, string> = {
   "/tardal": "TARDAL · Per-Position",
   "/bbfs": "BBFS Generator",
   "/prediksi": "Prediksi Slot-Chain",
+  "/colok-bebas": "Colok Bebas",
+  "/shio": "Prediksi Shio 2026",
   "/akurasi": "Akurasi Tracker",
   "/otak-ai": "Otak AI",
   "/laporan": "Laporan Prediksi",
