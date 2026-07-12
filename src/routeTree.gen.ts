@@ -16,14 +16,10 @@ import { Route as GatedTardalRouteImport } from './routes/_gated.tardal'
 import { Route as GatedSmartAiRouteImport } from './routes/_gated.smart-ai'
 import { Route as GatedShioRouteImport } from './routes/_gated.shio'
 import { Route as GatedPrediksiRouteImport } from './routes/_gated.prediksi'
-import { Route as GatedPaitoRouteImport } from './routes/_gated.paito'
 import { Route as GatedOtakAiRouteImport } from './routes/_gated.otak-ai'
 import { Route as GatedLiveRouteImport } from './routes/_gated.live'
 import { Route as GatedLaporanRouteImport } from './routes/_gated.laporan'
-import { Route as GatedKlasifikasiRouteImport } from './routes/_gated.klasifikasi'
-import { Route as GatedKickRouteImport } from './routes/_gated.kick'
 import { Route as GatedKalkulatorRouteImport } from './routes/_gated.kalkulator'
-import { Route as GatedInvestasiRouteImport } from './routes/_gated.investasi'
 import { Route as GatedColokBebasRouteImport } from './routes/_gated.colok-bebas'
 import { Route as GatedAkurasiRouteImport } from './routes/_gated.akurasi'
 
@@ -61,11 +57,6 @@ const GatedPrediksiRoute = GatedPrediksiRouteImport.update({
   path: '/prediksi',
   getParentRoute: () => GatedRoute,
 } as any)
-const GatedPaitoRoute = GatedPaitoRouteImport.update({
-  id: '/paito',
-  path: '/paito',
-  getParentRoute: () => GatedRoute,
-} as any)
 const GatedOtakAiRoute = GatedOtakAiRouteImport.update({
   id: '/otak-ai',
   path: '/otak-ai',
@@ -81,24 +72,9 @@ const GatedLaporanRoute = GatedLaporanRouteImport.update({
   path: '/laporan',
   getParentRoute: () => GatedRoute,
 } as any)
-const GatedKlasifikasiRoute = GatedKlasifikasiRouteImport.update({
-  id: '/klasifikasi',
-  path: '/klasifikasi',
-  getParentRoute: () => GatedRoute,
-} as any)
-const GatedKickRoute = GatedKickRouteImport.update({
-  id: '/kick',
-  path: '/kick',
-  getParentRoute: () => GatedRoute,
-} as any)
 const GatedKalkulatorRoute = GatedKalkulatorRouteImport.update({
   id: '/kalkulator',
   path: '/kalkulator',
-  getParentRoute: () => GatedRoute,
-} as any)
-const GatedInvestasiRoute = GatedInvestasiRouteImport.update({
-  id: '/investasi',
-  path: '/investasi',
   getParentRoute: () => GatedRoute,
 } as any)
 const GatedColokBebasRoute = GatedColokBebasRouteImport.update({
@@ -117,14 +93,10 @@ export interface FileRoutesByFullPath {
   '/unlock': typeof UnlockRoute
   '/akurasi': typeof GatedAkurasiRoute
   '/colok-bebas': typeof GatedColokBebasRoute
-  '/investasi': typeof GatedInvestasiRoute
   '/kalkulator': typeof GatedKalkulatorRoute
-  '/kick': typeof GatedKickRoute
-  '/klasifikasi': typeof GatedKlasifikasiRoute
   '/laporan': typeof GatedLaporanRoute
   '/live': typeof GatedLiveRoute
   '/otak-ai': typeof GatedOtakAiRoute
-  '/paito': typeof GatedPaitoRoute
   '/prediksi': typeof GatedPrediksiRoute
   '/shio': typeof GatedShioRoute
   '/smart-ai': typeof GatedSmartAiRoute
@@ -134,14 +106,10 @@ export interface FileRoutesByTo {
   '/unlock': typeof UnlockRoute
   '/akurasi': typeof GatedAkurasiRoute
   '/colok-bebas': typeof GatedColokBebasRoute
-  '/investasi': typeof GatedInvestasiRoute
   '/kalkulator': typeof GatedKalkulatorRoute
-  '/kick': typeof GatedKickRoute
-  '/klasifikasi': typeof GatedKlasifikasiRoute
   '/laporan': typeof GatedLaporanRoute
   '/live': typeof GatedLiveRoute
   '/otak-ai': typeof GatedOtakAiRoute
-  '/paito': typeof GatedPaitoRoute
   '/prediksi': typeof GatedPrediksiRoute
   '/shio': typeof GatedShioRoute
   '/smart-ai': typeof GatedSmartAiRoute
@@ -154,14 +122,10 @@ export interface FileRoutesById {
   '/unlock': typeof UnlockRoute
   '/_gated/akurasi': typeof GatedAkurasiRoute
   '/_gated/colok-bebas': typeof GatedColokBebasRoute
-  '/_gated/investasi': typeof GatedInvestasiRoute
   '/_gated/kalkulator': typeof GatedKalkulatorRoute
-  '/_gated/kick': typeof GatedKickRoute
-  '/_gated/klasifikasi': typeof GatedKlasifikasiRoute
   '/_gated/laporan': typeof GatedLaporanRoute
   '/_gated/live': typeof GatedLiveRoute
   '/_gated/otak-ai': typeof GatedOtakAiRoute
-  '/_gated/paito': typeof GatedPaitoRoute
   '/_gated/prediksi': typeof GatedPrediksiRoute
   '/_gated/shio': typeof GatedShioRoute
   '/_gated/smart-ai': typeof GatedSmartAiRoute
@@ -175,14 +139,10 @@ export interface FileRouteTypes {
     | '/unlock'
     | '/akurasi'
     | '/colok-bebas'
-    | '/investasi'
     | '/kalkulator'
-    | '/kick'
-    | '/klasifikasi'
     | '/laporan'
     | '/live'
     | '/otak-ai'
-    | '/paito'
     | '/prediksi'
     | '/shio'
     | '/smart-ai'
@@ -192,14 +152,10 @@ export interface FileRouteTypes {
     | '/unlock'
     | '/akurasi'
     | '/colok-bebas'
-    | '/investasi'
     | '/kalkulator'
-    | '/kick'
-    | '/klasifikasi'
     | '/laporan'
     | '/live'
     | '/otak-ai'
-    | '/paito'
     | '/prediksi'
     | '/shio'
     | '/smart-ai'
@@ -211,14 +167,10 @@ export interface FileRouteTypes {
     | '/unlock'
     | '/_gated/akurasi'
     | '/_gated/colok-bebas'
-    | '/_gated/investasi'
     | '/_gated/kalkulator'
-    | '/_gated/kick'
-    | '/_gated/klasifikasi'
     | '/_gated/laporan'
     | '/_gated/live'
     | '/_gated/otak-ai'
-    | '/_gated/paito'
     | '/_gated/prediksi'
     | '/_gated/shio'
     | '/_gated/smart-ai'
@@ -282,13 +234,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GatedPrediksiRouteImport
       parentRoute: typeof GatedRoute
     }
-    '/_gated/paito': {
-      id: '/_gated/paito'
-      path: '/paito'
-      fullPath: '/paito'
-      preLoaderRoute: typeof GatedPaitoRouteImport
-      parentRoute: typeof GatedRoute
-    }
     '/_gated/otak-ai': {
       id: '/_gated/otak-ai'
       path: '/otak-ai'
@@ -310,32 +255,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GatedLaporanRouteImport
       parentRoute: typeof GatedRoute
     }
-    '/_gated/klasifikasi': {
-      id: '/_gated/klasifikasi'
-      path: '/klasifikasi'
-      fullPath: '/klasifikasi'
-      preLoaderRoute: typeof GatedKlasifikasiRouteImport
-      parentRoute: typeof GatedRoute
-    }
-    '/_gated/kick': {
-      id: '/_gated/kick'
-      path: '/kick'
-      fullPath: '/kick'
-      preLoaderRoute: typeof GatedKickRouteImport
-      parentRoute: typeof GatedRoute
-    }
     '/_gated/kalkulator': {
       id: '/_gated/kalkulator'
       path: '/kalkulator'
       fullPath: '/kalkulator'
       preLoaderRoute: typeof GatedKalkulatorRouteImport
-      parentRoute: typeof GatedRoute
-    }
-    '/_gated/investasi': {
-      id: '/_gated/investasi'
-      path: '/investasi'
-      fullPath: '/investasi'
-      preLoaderRoute: typeof GatedInvestasiRouteImport
       parentRoute: typeof GatedRoute
     }
     '/_gated/colok-bebas': {
@@ -358,14 +282,10 @@ declare module '@tanstack/react-router' {
 interface GatedRouteChildren {
   GatedAkurasiRoute: typeof GatedAkurasiRoute
   GatedColokBebasRoute: typeof GatedColokBebasRoute
-  GatedInvestasiRoute: typeof GatedInvestasiRoute
   GatedKalkulatorRoute: typeof GatedKalkulatorRoute
-  GatedKickRoute: typeof GatedKickRoute
-  GatedKlasifikasiRoute: typeof GatedKlasifikasiRoute
   GatedLaporanRoute: typeof GatedLaporanRoute
   GatedLiveRoute: typeof GatedLiveRoute
   GatedOtakAiRoute: typeof GatedOtakAiRoute
-  GatedPaitoRoute: typeof GatedPaitoRoute
   GatedPrediksiRoute: typeof GatedPrediksiRoute
   GatedShioRoute: typeof GatedShioRoute
   GatedSmartAiRoute: typeof GatedSmartAiRoute
@@ -376,14 +296,10 @@ interface GatedRouteChildren {
 const GatedRouteChildren: GatedRouteChildren = {
   GatedAkurasiRoute: GatedAkurasiRoute,
   GatedColokBebasRoute: GatedColokBebasRoute,
-  GatedInvestasiRoute: GatedInvestasiRoute,
   GatedKalkulatorRoute: GatedKalkulatorRoute,
-  GatedKickRoute: GatedKickRoute,
-  GatedKlasifikasiRoute: GatedKlasifikasiRoute,
   GatedLaporanRoute: GatedLaporanRoute,
   GatedLiveRoute: GatedLiveRoute,
   GatedOtakAiRoute: GatedOtakAiRoute,
-  GatedPaitoRoute: GatedPaitoRoute,
   GatedPrediksiRoute: GatedPrediksiRoute,
   GatedShioRoute: GatedShioRoute,
   GatedSmartAiRoute: GatedSmartAiRoute,
@@ -400,13 +316,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
