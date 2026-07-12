@@ -16,6 +16,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/kalkulator": "Kalkulator Martingale",
   "/smart-ai": "Smart AI · CERDAS",
   "/tardal": "TARDAL · Per-Position",
+  "/bbfs": "BBFS Generator",
   "/prediksi": "Prediksi Slot-Chain",
   "/akurasi": "Akurasi Tracker",
   "/otak-ai": "Otak AI",
