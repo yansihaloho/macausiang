@@ -20,7 +20,6 @@ const PAGE_TITLES: Record<string, string> = {
   "/akurasi": "Akurasi Tracker",
   "/otak-ai": "Otak AI",
   "/laporan": "Laporan Prediksi",
-  "/kick": "KickLive",
 };
 
 function GatedLayout() {
