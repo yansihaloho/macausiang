@@ -14,7 +14,9 @@ export const Route = createFileRoute("/_gated/live")({
 
 function nextSlotSeconds(): { label: string; secs: number } {
   const now = new Date();
-  const wib = new Date(now.getTime() + (7 * 60 - now.getTimezoneOffset()) * 60_000);
+  // Konversi waktu lokal → WIB (UTC+7) apa pun timezone user.
+  // getTimezoneOffset() = menit yang ditambahkan ke waktu lokal utk mendapat UTC.
+  const wib = new Date(now.getTime() + (now.getTimezoneOffset() + 7 * 60) * 60_000);
   const mins = wib.getUTCHours() * 60 + wib.getUTCMinutes();
   const slots = [1, 13 * 60, 16 * 60, 19 * 60, 22 * 60, 23 * 60];
   const labels = ["00:01", "13:00", "16:00", "19:00", "22:00", "23:00"];

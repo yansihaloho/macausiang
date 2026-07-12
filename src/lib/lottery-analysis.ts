@@ -233,16 +233,20 @@ function buildTardalImpl(rows: ResultRow[]) {
 export function engineConfidences(rows: ResultRow[]) {
   const draws = iterDraws(rows);
   const total = draws.length || 1;
-  const freq = digitFrequency(rows);
-  const gaps = digitGaps(rows);
+  // JANGAN mutasi array hasil memo — selalu clone dulu sebelum sort.
+  const freq = [...digitFrequency(rows)];
+  const gaps = [...digitGaps(rows)];
   const pos = positionFrequency(rows);
+  const posDigits = pos.map((p) => [...p.digits]);
 
-  const hotDigit = [...freq].sort((a, b) => b.count - a.count)[0];
-  const dueDigit = [...gaps].sort((a, b) => b.gap - a.gap)[0];
-  const asTop = pos[0].digits.sort((a, b) => b.score - a.score)[0];
-  const kopTop = pos[1].digits.sort((a, b) => b.score - a.score)[0];
-  const kepalaTop = pos[2].digits.sort((a, b) => b.score - a.score)[0];
-  const ekorTop = pos[3].digits.sort((a, b) => b.score - a.score)[0];
+  const freqSorted = [...freq].sort((a, b) => b.count - a.count);
+  const gapsSorted = [...gaps].sort((a, b) => b.gap - a.gap);
+  const hotDigit = freqSorted[0];
+  const dueDigit = gapsSorted[0];
+  const asTop = [...posDigits[0]].sort((a, b) => b.score - a.score)[0];
+  const kopTop = [...posDigits[1]].sort((a, b) => b.score - a.score)[0];
+  const kepalaTop = [...posDigits[2]].sort((a, b) => b.score - a.score)[0];
+  const ekorTop = [...posDigits[3]].sort((a, b) => b.score - a.score)[0];
 
   // "Confidence" = how strongly the top signal deviates from uniform (10% baseline).
   const conf = (x: { count?: number; score?: number; gap?: number }, kind: "count" | "score" | "gap") => {
@@ -256,9 +260,9 @@ export function engineConfidences(rows: ResultRow[]) {
 
   return [
     { name: "Freq-Long", confidence: conf(hotDigit, "count"), detail: `hot digit ${hotDigit.digit} (${hotDigit.pct}%)` },
-    { name: "Freq-Recent", confidence: conf(freq.sort((a, b) => b.count - a.count)[1], "count"), detail: "top-2 hot digit" },
+    { name: "Freq-Recent", confidence: conf(freqSorted[1], "count"), detail: "top-2 hot digit" },
     { name: "Gap-Weighted", confidence: conf(dueDigit, "gap"), detail: `due digit ${dueDigit.digit} gap ${dueDigit.gap}` },
-    { name: "Due-Digit", confidence: conf(gaps.sort((a, b) => b.gap - a.gap)[1], "gap"), detail: "runner-up due" },
+    { name: "Due-Digit", confidence: conf(gapsSorted[1], "gap"), detail: "runner-up due" },
     { name: "Position-AS", confidence: conf(asTop, "score"), detail: `AS top ${asTop.digit} · ${asTop.score}%` },
     { name: "Position-KOP", confidence: conf(kopTop, "score"), detail: `KOP top ${kopTop.digit} · ${kopTop.score}%` },
     { name: "Position-KEPALA", confidence: conf(kepalaTop, "score"), detail: `KEPALA top ${kepalaTop.digit} · ${kepalaTop.score}%` },
