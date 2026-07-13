@@ -32,13 +32,15 @@ function ColokBebasPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-xs text-muted-foreground">
-            Peluang tiap digit muncul minimal 1× di hasil 4D, dari 30 draw terakhir sumber {feed.source}.
+            Skor komposit tiap digit: 45% recency berdecay (λ=0.94) · 35% frekuensi historis · 20% due-gap. Data {feed.source}.
           </p>
           <div className="flex gap-2">
             {top4.map((d) => (
               <div key={d.digit} className="flex flex-col items-center rounded-xl border border-primary/40 bg-primary/10 px-4 py-3">
                 <span className="font-mono text-3xl font-black text-primary">{d.digit}</span>
-                <span className="mt-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{d.pct}%</span>
+                <span className="mt-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                  skor {d.score}
+                </span>
               </div>
             ))}
           </div>
@@ -53,15 +55,20 @@ function ColokBebasPage() {
           <Card key={panel.title}>
             <CardHeader><CardTitle className="text-sm">{panel.title}</CardTitle></CardHeader>
             <CardContent className="space-y-2">
-              {panel.data.map((d) => (
+              {(() => {
+                const maxScore = Math.max(...panel.data.map((d) => d.score), 1);
+                return panel.data.map((d) => (
                 <div key={d.digit} className="flex items-center gap-3">
                   <span className="w-6 font-mono text-lg font-black text-foreground">{d.digit}</span>
                   <div className="flex-1 h-2 overflow-hidden rounded-full bg-muted">
-                    <div className="h-full bg-primary" style={{ width: `${d.pct}%` }} />
+                    <div className="h-full bg-primary" style={{ width: `${Math.round((d.score / maxScore) * 100)}%` }} />
                   </div>
-                  <span className="w-14 text-right font-mono text-xs font-bold text-muted-foreground">{d.pct}%</span>
+                  <span className="w-20 text-right font-mono text-[10px] font-bold text-muted-foreground">
+                    {d.pct}% · g{d.gap}
+                  </span>
                 </div>
-              ))}
+                ));
+              })()}
             </CardContent>
           </Card>
         ))}
@@ -89,15 +96,19 @@ function ColokBebasPage() {
                   ))}
                 </div>
                 <div className="space-y-1">
-                  {panel.digits.slice(0, 6).map((d) => (
+                  {(() => {
+                    const top = panel.digits.slice(0, 6);
+                    const maxS = Math.max(...top.map((d) => d.score), 1);
+                    return top.map((d) => (
                     <div key={d.digit} className="flex items-center gap-2 text-[11px]">
                       <span className="w-4 font-mono font-bold text-foreground">{d.digit}</span>
                       <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
-                        <div className="h-full bg-primary" style={{ width: `${d.pct}%` }} />
+                        <div className="h-full bg-primary" style={{ width: `${Math.round((d.score / maxS) * 100)}%` }} />
                       </div>
                       <span className="w-10 text-right font-mono text-muted-foreground">{d.pct}%</span>
                     </div>
-                  ))}
+                    ));
+                  })()}
                 </div>
               </div>
             ))}
