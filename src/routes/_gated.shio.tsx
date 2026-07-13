@@ -3,9 +3,9 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { lotteryQueryOptions } from "@/lib/lottery-query";
-import { shioStats, shioStatsBySlot, shioNumbers, type ShioName } from "@/lib/lottery-analysis";
+import { shioStats, shioStatsBySlot, shioNumbers, backtestShio, type ShioName } from "@/lib/lottery-analysis";
 import { TIME_SLOTS } from "@/lib/lottery.functions";
-import { Compass } from "lucide-react";
+import { Compass, Activity } from "lucide-react";
 
 export const Route = createFileRoute("/_gated/shio")({
   loader: ({ context }) => context.queryClient.ensureQueryData(lotteryQueryOptions),
@@ -22,6 +22,8 @@ function ShioPage() {
   const [selected, setSelected] = useState<ShioName>(stats[0]?.name ?? "Kuda");
   const nums = shioNumbers(selected);
   const maxScore = Math.max(...stats.map((s) => s.score), 1);
+  const backtest = useMemo(() => backtestShio(feed.rows, 3), [feed]);
+  const maxBt = Math.max(...backtest.map((b) => b.pct), 1);
 
   return (
     <div className="space-y-6">
@@ -107,6 +109,33 @@ function ShioPage() {
                 </div>
               );
             })}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-sm">
+            <Activity className="h-4 w-4 text-primary" /> Backtest Akurasi — Horizon 1–10 Slot
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-3 text-xs text-muted-foreground">
+            Hit rate TOP-3 shio terhadap draw historis. Untuk tiap anchor, prediksi hanya memakai data <em>sebelum</em> anchor (no look-ahead). "Horizon H" = shio dari 2D-belakang aktual masuk TOP-3 pada salah satu H draw berikutnya.
+          </p>
+          <div className="space-y-1.5">
+            {backtest.map((b) => (
+              <div key={b.horizon} className="flex items-center gap-3 text-xs">
+                <span className="w-14 font-mono font-bold text-foreground">H+{b.horizon}</span>
+                <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
+                  <div className="h-full bg-primary" style={{ width: `${Math.round((b.pct / maxBt) * 100)}%` }} />
+                </div>
+                <span className="w-16 text-right font-mono font-bold text-primary">{b.pct}%</span>
+                <span className="w-20 text-right font-mono text-[10px] text-muted-foreground">
+                  {b.hits}/{b.total}
+                </span>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>

@@ -3,9 +3,9 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { lotteryQueryOptions } from "@/lib/lottery-query";
-import { colokBebas, colokBebasBySlot } from "@/lib/lottery-analysis";
+import { colokBebas, colokBebasBySlot, backtestColokBebas } from "@/lib/lottery-analysis";
 import { TIME_SLOTS } from "@/lib/lottery.functions";
-import { Zap } from "lucide-react";
+import { Zap, Activity } from "lucide-react";
 
 export const Route = createFileRoute("/_gated/colok-bebas")({
   loader: ({ context }) => context.queryClient.ensureQueryData(lotteryQueryOptions),
@@ -21,6 +21,8 @@ function ColokBebasPage() {
     [feed],
   );
   const top4 = recent.slice(0, 4);
+  const backtest = useMemo(() => backtestColokBebas(feed.rows, 4, 30), [feed]);
+  const maxBt = Math.max(...backtest.map((b) => b.pct), 1);
 
   return (
     <div className="space-y-6">
@@ -110,6 +112,33 @@ function ColokBebasPage() {
                     ));
                   })()}
                 </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-sm">
+            <Activity className="h-4 w-4 text-primary" /> Backtest Akurasi — Horizon 1–10 Slot
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-3 text-xs text-muted-foreground">
+            Hit rate TOP-4 digit terhadap draw historis. Untuk tiap anchor, prediksi hanya memakai data <em>sebelum</em> anchor (no look-ahead). "Horizon H" = minimal 1 dari 4 digit muncul di salah satu H draw berikutnya.
+          </p>
+          <div className="space-y-1.5">
+            {backtest.map((b) => (
+              <div key={b.horizon} className="flex items-center gap-3 text-xs">
+                <span className="w-14 font-mono font-bold text-foreground">H+{b.horizon}</span>
+                <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
+                  <div className="h-full bg-primary" style={{ width: `${Math.round((b.pct / maxBt) * 100)}%` }} />
+                </div>
+                <span className="w-16 text-right font-mono font-bold text-primary">{b.pct}%</span>
+                <span className="w-20 text-right font-mono text-[10px] text-muted-foreground">
+                  {b.hits}/{b.total}
+                </span>
               </div>
             ))}
           </div>
