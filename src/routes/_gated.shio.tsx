@@ -21,7 +21,7 @@ function ShioPage() {
   );
   const [selected, setSelected] = useState<ShioName>(stats[0]?.name ?? "Kuda");
   const nums = shioNumbers(selected);
-  const maxCount = stats[0]?.count || 1;
+  const maxScore = Math.max(...stats.map((s) => s.score), 1);
 
   return (
     <div className="space-y-6">
@@ -33,7 +33,7 @@ function ShioPage() {
         </CardHeader>
         <CardContent>
           <p className="text-xs text-muted-foreground">
-            Frekuensi & gap kemunculan tiap shio dari 2D belakang, {feed.rows.length} hari data real ({feed.source}). Shio 01 = Kuda (kalender 2026).
+            Skor komposit shio: 40% frekuensi historis · 40% recency berdecay (λ=0.95) · 20% due-gap. Basis 2D belakang dari {feed.rows.length} hari data ({feed.source}). Shio 01 = Kuda (kalender 2026).
           </p>
         </CardContent>
       </Card>
@@ -49,13 +49,15 @@ function ShioPage() {
             >
               <div className="flex items-center justify-between">
                 <span className="text-sm font-black text-foreground">{s.name}</span>
-                <span className="rounded bg-muted px-2 py-0.5 font-mono text-[10px] font-bold">{s.pct}%</span>
+                <span className="rounded bg-primary/15 px-2 py-0.5 font-mono text-[10px] font-bold text-primary">
+                  {s.score}
+                </span>
               </div>
               <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
-                <div className="h-full bg-primary" style={{ width: `${Math.round((s.count / maxCount) * 100)}%` }} />
+                <div className="h-full bg-primary" style={{ width: `${Math.round((s.score / maxScore) * 100)}%` }} />
               </div>
               <p className="mt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                {s.count} hit · gap {s.gap}
+                {s.count}× · {s.pct}% · gap {s.gap}
               </p>
             </button>
           );
@@ -95,10 +97,10 @@ function ShioPage() {
                       <div key={it.name} className="flex items-center gap-2 text-[11px]">
                         <span className="w-16 font-bold text-foreground">{it.name}</span>
                         <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
-                          <div className="h-full bg-primary" style={{ width: `${Math.round((it.count / max) * 100)}%` }} />
+                          <div className="h-full bg-primary" style={{ width: `${Math.round((it.score / (top3[0]?.score || 1)) * 100)}%` }} />
                         </div>
                         <span className="w-14 text-right font-mono text-muted-foreground">
-                          {it.count}× · g{it.gap}
+                          {it.score} · g{it.gap}
                         </span>
                       </div>
                     ))}
