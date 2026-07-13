@@ -477,26 +477,7 @@ export function shioStats(rows: ResultRow[]) {
   return memo(rows, "shioStats", () => shioStatsImpl(rows));
 }
 function shioStatsImpl(rows: ResultRow[]) {
-  const draws = iterDraws(rows);
-  const total = draws.length || 1;
-  const counts: Record<ShioName, number> = Object.fromEntries(
-    SHIO_2026.map((s) => [s, 0]),
-  ) as Record<ShioName, number>;
-  const lastSeenIdx: Record<ShioName, number> = Object.fromEntries(
-    SHIO_2026.map((s) => [s, -1]),
-  ) as Record<ShioName, number>;
-  draws.forEach((d, idx) => {
-    if (d.value.length !== 4) return;
-    const shio = shioOf(d.value.slice(-2));
-    counts[shio]++;
-    if (lastSeenIdx[shio] === -1) lastSeenIdx[shio] = idx;
-  });
-  return SHIO_2026.map((name) => ({
-    name,
-    count: counts[name],
-    gap: lastSeenIdx[name] === -1 ? draws.length : lastSeenIdx[name],
-    pct: Math.round((counts[name] / total) * 1000) / 10,
-  })).sort((a, b) => b.count - a.count);
+  return computeShioStats(iterDraws(rows));
 }
 
 /** Shio stats per slot jam. */
@@ -505,25 +486,53 @@ export function shioStatsBySlot(rows: ResultRow[], slot: Slot) {
 }
 function shioStatsBySlotImpl(rows: ResultRow[], slot: Slot) {
   const draws = iterDrawsForSlot(rows, slot);
-  const total = draws.length || 1;
-  const counts = Object.fromEntries(SHIO_2026.map((s) => [s, 0])) as Record<ShioName, number>;
-  const lastSeenIdx = Object.fromEntries(SHIO_2026.map((s) => [s, -1])) as Record<ShioName, number>;
+  return { slot, samples: draws.length, items: computeShioStats(draws) };
+}
+
+/**
+ * Composite Shio score:
+ *   0.40 · frekuensi historis (pct)
+ *   0.40 · recency berdecay (λ=0.95)
+ *   0.20 · due-gap normalized
+ * `draws` newest → oldest.
+ */
+function computeShioStats(draws: { value: string }[]) {
+  const LAMBDA = 0.95;
+  const counts: Record<ShioName, number> = Object.fromEntries(
+    SHIO_2026.map((s) => [s, 0]),
+  ) as Record<ShioName, number>;
+  const weighted: Record<ShioName, number> = Object.fromEntries(
+    SHIO_2026.map((s) => [s, 0]),
+  ) as Record<ShioName, number>;
+  const lastSeenIdx: Record<ShioName, number> = Object.fromEntries(
+    SHIO_2026.map((s) => [s, -1]),
+  ) as Record<ShioName, number>;
+  let validTotal = 0;
+  let weightSum = 0;
   draws.forEach((d, idx) => {
     if (d.value.length !== 4) return;
     const shio = shioOf(d.value.slice(-2));
+    const w = Math.pow(LAMBDA, idx);
     counts[shio]++;
+    weighted[shio] += w;
+    weightSum += w;
+    validTotal++;
     if (lastSeenIdx[shio] === -1) lastSeenIdx[shio] = idx;
   });
-  return {
-    slot,
-    samples: draws.length,
-    items: SHIO_2026.map((name) => ({
-      name,
-      count: counts[name],
-      gap: lastSeenIdx[name] === -1 ? draws.length : lastSeenIdx[name],
-      pct: Math.round((counts[name] / total) * 1000) / 10,
-    })).sort((a, b) => b.count - a.count),
-  };
+  const total = validTotal || 1;
+  weightSum = weightSum || 1;
+  const gapFor = (name: ShioName) =>
+    lastSeenIdx[name] === -1 ? draws.length : lastSeenIdx[name];
+  const maxGap = Math.max(...SHIO_2026.map(gapFor), 1);
+  return SHIO_2026.map((name) => {
+    const pct = Math.round((counts[name] / total) * 1000) / 10;
+    const recentPct = (weighted[name] / weightSum) * 100;
+    const gap = gapFor(name);
+    const gapBoost = (gap / maxGap) * 100;
+    const score =
+      Math.round((0.40 * pct + 0.40 * recentPct + 0.20 * gapBoost) * 10) / 10;
+    return { name, count: counts[name], gap, pct, score };
+  }).sort((a, b) => b.score - a.score);
 }
 
 /** Nomor 2D per shio (0-99, siklus 12). */
