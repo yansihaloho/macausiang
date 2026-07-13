@@ -554,6 +554,92 @@ export function shioNumbers(name: ShioName): string[] {
 export function buildLog(rows: ResultRow[], limit = 24) {
   return memo(rows, `buildLog:${limit}`, () => buildLogImpl(rows, limit));
 }
+
+// ============================================================================
+// Backtesting: hit rate per horizon 1..10 slot
+// ----------------------------------------------------------------------------
+// Untuk tiap anchor `i` di data chronological, prediksi dihitung HANYA dari
+// data sebelum i (no leakage). Untuk horizon H, dianggap "hit" jika prediksi
+// TOP-K mengenai salah satu dari H draw berikutnya (i .. i+H-1).
+//   - Colok Bebas: TOP-K digit (default 4). Hit = minimal satu digit TOP-K
+//     muncul di 4D actual pada rentang horizon.
+//   - Shio: TOP-K shio (default 3). Hit = shio dari 2D-belakang actual
+//     termasuk dalam TOP-K pada rentang horizon.
+// ============================================================================
+
+export type BacktestPoint = {
+  horizon: number;
+  hits: number;
+  total: number;
+  pct: number; // 0..100
+};
+
+const MIN_BACKTEST_HISTORY = 30;
+const MAX_HORIZON = 10;
+
+function runBacktest(
+  rows: ResultRow[],
+  predict: (histNewestFirst: { value: string }[]) => (value: string) => boolean,
+): BacktestPoint[] {
+  const chrono = iterDraws(rows).slice().reverse(); // oldest → newest
+  const buckets = Array.from({ length: MAX_HORIZON }, (_, h) => ({
+    horizon: h + 1,
+    hits: 0,
+    total: 0,
+  }));
+  for (let i = MIN_BACKTEST_HISTORY; i < chrono.length; i++) {
+    // History newest → oldest, exactly what compute* expects.
+    const hist: { value: string }[] = [];
+    for (let j = i - 1; j >= 0; j--) hist.push(chrono[j]);
+    const isHit = predict(hist);
+    let hitFound = false;
+    for (let h = 0; h < MAX_HORIZON; h++) {
+      const idx = i + h;
+      if (idx >= chrono.length) break;
+      if (!hitFound && isHit(chrono[idx].value)) hitFound = true;
+      const b = buckets[h];
+      b.total++;
+      if (hitFound) b.hits++;
+    }
+  }
+  return buckets.map((b) => ({
+    ...b,
+    pct: b.total ? Math.round((b.hits / b.total) * 1000) / 10 : 0,
+  }));
+}
+
+export function backtestColokBebas(rows: ResultRow[], topK = 4, recentN = 30) {
+  return memo(rows, `backtestCB:${topK}:${recentN}`, () =>
+    runBacktest(rows, (hist) => {
+      const top = new Set(
+        computeColokBebas(hist.slice(0, recentN))
+          .slice(0, topK)
+          .map((d) => d.digit),
+      );
+      return (value: string) => {
+        for (const ch of value) {
+          const d = ch.charCodeAt(0) - 48;
+          if (top.has(d)) return true;
+        }
+        return false;
+      };
+    }),
+  );
+}
+
+export function backtestShio(rows: ResultRow[], topK = 3) {
+  return memo(rows, `backtestShio:${topK}`, () =>
+    runBacktest(rows, (hist) => {
+      const top = new Set(
+        computeShioStats(hist).slice(0, topK).map((s) => s.name),
+      );
+      return (value: string) => {
+        if (value.length !== 4) return false;
+        return top.has(shioOf(value.slice(-2)));
+      };
+    }),
+  );
+}
 function buildLogImpl(rows: ResultRow[], limit: number) {
   const all = iterDraws(rows).reverse(); // chronological
   const start = Math.max(30, all.length - limit); // need history before eval
