@@ -83,7 +83,6 @@ function ShioPage() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {perSlot.map((panel) => {
               const top3 = panel.items.slice(0, 3);
-              const max = top3[0]?.count || 1;
               return (
                 <div key={panel.slot} className="rounded-xl border border-border bg-card p-3">
                   <div className="mb-2 flex items-center justify-between">
