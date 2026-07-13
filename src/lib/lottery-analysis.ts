@@ -393,23 +393,7 @@ export function colokBebas(rows: ResultRow[], recentN = 30) {
   return memo(rows, `colokBebas:${recentN}`, () => colokBebasImpl(rows, recentN));
 }
 function colokBebasImpl(rows: ResultRow[], recentN: number) {
-  const draws = iterDraws(rows).slice(0, recentN);
-  const appear = Array(10).fill(0);
-  for (const { value } of draws) {
-    const seen = new Set(value.split(""));
-    seen.forEach((c) => {
-      const d = c.charCodeAt(0) - 48;
-      if (d >= 0 && d <= 9) appear[d]++;
-    });
-  }
-  const total = draws.length || 1;
-  return appear
-    .map((count, digit) => ({
-      digit,
-      count,
-      pct: Math.round((count / total) * 1000) / 10,
-    }))
-    .sort((a, b) => b.pct - a.pct);
+  return computeColokBebas(iterDraws(rows).slice(0, recentN));
 }
 
 /** Colok Bebas per slot jam — hitung probabilitas digit muncul di 4D hanya untuk slot itu. */
@@ -420,26 +404,54 @@ export function colokBebasBySlot(rows: ResultRow[], slot: Slot, recentN = 30) {
 }
 function colokBebasBySlotImpl(rows: ResultRow[], slot: Slot, recentN: number) {
   const draws = iterDrawsForSlot(rows, slot).slice(0, recentN);
-  const appear = Array(10).fill(0);
-  for (const { value } of draws) {
-    const seen = new Set(value.split(""));
-    seen.forEach((c) => {
-      const d = c.charCodeAt(0) - 48;
-      if (d >= 0 && d <= 9) appear[d]++;
-    });
-  }
+  return { slot, samples: draws.length, digits: computeColokBebas(draws) };
+}
+
+/**
+ * Composite Colok Bebas score:
+ *   1. Frekuensi kemunculan mentah (pct)         → probabilitas historis
+ *   2. Exponential decay recency (λ=0.94)         → draw terbaru lebih berpengaruh
+ *   3. Gap boost (regresi ke mean)                → digit "due" naik peluangnya
+ * Skor akhir diskalakan 0-100 supaya sebanding dengan `pct` sebelumnya.
+ * `draws` diasumsikan urutan newest → oldest.
+ */
+function computeColokBebas(draws: { value: string }[]) {
   const total = draws.length || 1;
-  return {
-    slot,
-    samples: draws.length,
-    digits: appear
-      .map((count, digit) => ({
-        digit,
-        count,
-        pct: Math.round((count / total) * 1000) / 10,
-      }))
-      .sort((a, b) => b.pct - a.pct),
-  };
+  const LAMBDA = 0.94;
+
+  const appear = Array(10).fill(0);          // count muncul-di-draw (unique per draw)
+  const weighted = Array(10).fill(0);        // decay-weighted appearance
+  const lastSeen = Array(10).fill(-1);       // gap sejak muncul terakhir
+  let weightSum = 0;
+
+  draws.forEach(({ value }, i) => {
+    if (value.length !== 4) return;
+    const w = Math.pow(LAMBDA, i);
+    weightSum += w;
+    const seen = new Set<number>();
+    for (const ch of value) {
+      const d = ch.charCodeAt(0) - 48;
+      if (d >= 0 && d <= 9) seen.add(d);
+    }
+    seen.forEach((d) => {
+      appear[d]++;
+      weighted[d] += w;
+      if (lastSeen[d] === -1) lastSeen[d] = i;
+    });
+  });
+  // Digit yang tidak pernah muncul dianggap gap = jumlah draw.
+  for (let d = 0; d < 10; d++) if (lastSeen[d] === -1) lastSeen[d] = total;
+  const maxGap = Math.max(...lastSeen, 1);
+  weightSum = weightSum || 1;
+
+  return Array.from({ length: 10 }, (_, digit) => {
+    const pct = Math.round((appear[digit] / total) * 1000) / 10;
+    const recentPct = (weighted[digit] / weightSum) * 100;
+    const gapBoost = (lastSeen[digit] / maxGap) * 100; // 0..100
+    // Bobot: 45% recency (decay), 35% base pct, 20% due-gap.
+    const score = Math.round((0.45 * recentPct + 0.35 * pct + 0.20 * gapBoost) * 10) / 10;
+    return { digit, count: appear[digit], pct, score, gap: lastSeen[digit] };
+  }).sort((a, b) => b.score - a.score);
 }
 
 // ============================================================================
